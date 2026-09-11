@@ -35,3 +35,6 @@ build/
 mvn-*.txt
 warning-check.txt
 *.log
+.env
+.env.*
+!.env.example

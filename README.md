@@ -167,20 +167,115 @@ SisTomPatrimonio-api/
 
 ---
 
-## 🛠️ Como Executar o Projeto
+## 🛠️ Requisitos e Execução Local
 
-### 1. Subir a Infraestrutura (PostgreSQL + PostGIS)
-```bash
-docker-compose up -d
+### Requisitos mínimos
+
+- JDK 25 (recomendado: Temurin 25.x)
+- Docker Desktop ou Docker Engine
+- Git
+- Maven Wrapper incluído no repositório (`./mvnw`)
+
+> A aplicação foi validada com JDK 25. A versão 17 do Java não é compatível com o projeto devido ao `release` configurado em `pom.xml`.
+
+### 1. Configurar o Java 25
+
+No Windows PowerShell:
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+java -version
+./mvnw -version
 ```
 
-### 2. Executar as Migrações do Banco e Compilação
+No Linux/macOS:
+
 ```bash
-mvn clean install
+export JAVA_HOME=/caminho/para/jdk-25
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
+./mvnw -version
 ```
 
-### 3. Executar a Suíte de Testes Automatizados
+### 2. Subir a infraestrutura local (PostgreSQL + PostGIS)
+
 ```bash
-mvn test
+cp .env.example .env
+docker compose up -d
 ```
-*A suíte de testes executa automaticamente o perfil `@ActiveProfiles("test")` rodando os testes de integração dos controladores via `MockMvc` e `Mockito` sob o banco em memória H2 com extensão espacial.*
+
+No PowerShell, o equivalente é `Copy-Item .env.example .env`. O arquivo `.env` é ignorado pelo Git e pode conter os valores da sua máquina.
+
+Esse comando inicia o container da base de dados definida em `docker-compose.yaml` com as seguintes credenciais:
+
+- Banco: `sipma_db`
+- Usuário: `postgres`
+- Senha: `postgrespassword`
+- Porta: `5432`
+
+As configurações da aplicação podem ser sobrescritas por variáveis de ambiente:
+
+| Variável | Uso | Valor local padrão |
+| :--- | :--- | :--- |
+| `DB_URL` | URL JDBC do PostgreSQL | `jdbc:postgresql://localhost:5432/sipma_db` |
+| `DB_USERNAME` | Usuário do banco | `postgres` |
+| `DB_PASSWORD` | Senha do banco | `postgrespassword` |
+| `JWT_SECRET` | Segredo criptográfico da aplicação | definido apenas para desenvolvimento |
+
+Em produção, substitua todos os valores padrão por secrets do ambiente de hospedagem ou de um secret manager. Nunca versionar o arquivo `.env`.
+
+### 3. Compilar o projeto
+
+```bash
+./mvnw clean install
+```
+
+### 4. Executar a aplicação
+
+```bash
+./mvnw spring-boot:run
+```
+
+A API ficará disponível em:
+
+- http://localhost:8080/api
+
+### 5. Rodar os testes automatizados
+
+```bash
+./mvnw test
+```
+
+*Os testes utilizam o perfil de teste com `H2` em memória e não dependem do PostgreSQL local. Isso permite validar a camada de controller/service com isolamento e rapidez.*
+
+---
+
+## 🔄 CI/CD no GitHub Actions
+
+Este repositório inclui um workflow de integração contínua em `.github/workflows/ci.yml` que executa:
+
+- checkout do código
+- instalação do JDK 25
+- build com Maven
+- execução da suíte de testes
+
+O objetivo é garantir que qualquer alteração enviada para `main` ou para branches de pull request passe pela validação automática antes do merge.
+
+O workflow `.github/workflows/release.yml` gera uma release automaticamente quando uma tag semântica é publicada:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+O pipeline compila o JAR com Java 25 e anexa o artefato à Release do GitHub. O deploy da aplicação deve ser configurado separadamente no ambiente de hospedagem, usando os secrets de produção.
+
+---
+
+## 📌 Observações importantes
+
+- O projeto é construído com Spring Boot 3.5.x e Java 25.
+- O banco de produção e desenvolvimento usa PostgreSQL com extensão PostGIS.
+- O ambiente de testes usa H2 para manter a execução confiável em CI e em máquinas locais sem depender de um servidor de banco externo.
+- O fluxo de execução local recomendado é: Java 25 -> Docker -> `./mvnw test` -> `./mvnw spring-boot:run`.
