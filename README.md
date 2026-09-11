@@ -1,6 +1,6 @@
 # 🏛️ SIP-MA — Sistema de Informação do Patrimônio (Maranhão)
 
-O **SIP-MA** é uma plataforma corporativa e estadual de geoprocessamento, salvaguarda e controle documental projetada para mapear, proteger e fiscalizar a herança cultural tangível (bens materiais edificados), intangível (patrimônio imaterial/folclore) e arqueológica do Estado do Maranhão.
+O **SisTomPatrimonio** é uma plataforma corporativa e estadual de geoprocessamento, salvaguarda e controle documental projetada para mapear, proteger e fiscalizar a herança cultural tangível (bens materiais edificados), intangível (patrimônio imaterial/folclore) e arqueológica do Estado do Maranhão.
 
 ---
 
@@ -21,14 +21,14 @@ Ao contrário de sistemas tradicionais de tombamento interno de ativos, o SIP-MA
 ## 📂 Estrutura do Projeto Backend
 
 ```text
-sipma-api/
+SisTomPatrimonio-api/
 ├── docker-compose.yml                      # Container PostgreSQL 14 + PostGIS (Geoprocessamento)
 ├── pom.xml                                 # Dependências Maven (Spring Boot 3, PostGIS, Flyway, H2)
 ├── README.md                               # Documentação e guia do projeto
 └── src/
     ├── main/
-    │   ├── java/br/com/sipma/
-    │   │   ├── SipmaApplication.java       # Main Spring Boot
+    │   ├── java/br/com/SisTomPatrimonio/SisTomPatrimonio/
+    │   │   ├── SisTomPatrimonioApplication.java       # Main Spring Boot
     │   │   │
     │   │   ├── config/                     # Configurações do Spring Security e Beans
     │   │   │   └── SecurityConfig.java
@@ -53,7 +53,7 @@ sipma-api/
     │   │   │   ├── UsuarioDTO.java
     │   │   │   └── VistoriaDTO.java
     │   │   │
-    │   │   ├── exceptions/                 # Tratamento Global de Exceções
+    │   │   ├── exceptions/                 # Trutamento Global de Exceções
     │   │   │   └── RegraNegocioRunTime.java
     │   │   │
     │   │   ├── models/                     # Camada de Domínio
@@ -112,10 +112,10 @@ sipma-api/
     │   └── resources/
     │       ├── application.yml             # Propriedades da aplicação
     │       └── db/migration/
-    │           └── V1__criar_schema_sipma.sql # Migration DDL do PostGIS
+    │           └── V1__criar_schema_SisTomPatrimonio.sql # Migration DDL do PostGIS
     │
     └── test/                               # Suíte de Testes Automatizados
-        └── java/br/com/sipma/controllers/
+        └── java/br/com/SisTomPatrimonio/SisTomPatrimonio/controllers/
             ├── BemCulturalControllerTest.java
             ├── EventoBemControllerTest.java
             ├── ProcessoJudicialControllerTest.java
@@ -167,7 +167,7 @@ sipma-api/
 
 ---
 
-## 🛠️ Como Executar o Projeto & Estratégia de Testes
+## 🛠️ Como Executar o Projeto
 
 ### 1. Subir a Infraestrutura (PostgreSQL + PostGIS)
 ```bash
@@ -183,20 +183,4 @@ mvn clean install
 ```bash
 mvn test
 ```
-*A suíte de testes do ambiente acadêmico executa automaticamente o perfil `@ActiveProfiles("test")` rodando os testes de integração dos controladores via `MockMvc` e `Mockito` sob o banco em memória H2 com extensão espacial.*
-
----
-
-## 🧪 Estratégia de Qualidade & Recomendação de Paridade Ambiental (Testcontainers)
-
-### Execução de Testes Acadêmicos vs. Produção Governamental
-
-No ambiente de desenvolvimento local e avaliação acadêmica do trabalho, a suíte JUnit é mantida sobre o banco em memória H2 (`@ActiveProfiles("test")`). Isso garante execução leve, ágil e portabilidade imediata para avaliação, sem exigir que o avaliador possua o daemon do Docker em execução.
-
-### Recomendações Arquiteturais para Ambientes de Produção / CI-CD
-
-Para a implantação final em **pipeline de integração contínua (CI/CD)** de escala governamental, recomenda-se a substituição do H2 em memória pela biblioteca **Testcontainers** (`org.testcontainers:postgresql` com imagem `postgis/postgis:14-3.3-alpine`):
-
-1. **Garantia de Paridade Espacial Nativa**: A emulação do H2 via `H2SpatialDialect` e biblioteca JTS pode gerar pequenas variações de precisão flutuante em relação ao motor C/C++ nativo do PostGIS (GEOS/GDAL). O Testcontainers garante 100% de precisão matemática para cálculos de buffers (`ST_Buffer`) e interseção de polígonos (`ST_Intersects`) sob o SRID `EPSG:4326`.
-2. **Zero Falsos Positivos em Geoprocessamento**: A checagem de regras críticas — como verificar se as coordenadas de um novo imóvel residem na zona de amortecimento de um sítio arqueológico — é validada contra o mesmo motor espacial de produção.
-3. **Execução Fiel das Migrations Flyway**: O Testcontainers executa o script DDL real `V1__criar_schema_sipma.sql` no banco de dados PostGIS temporário, validando os tipos de dados `jsonb`, `uuid` e os índices espaciais `GiST`.
+*A suíte de testes executa automaticamente o perfil `@ActiveProfiles("test")` rodando os testes de integração dos controladores via `MockMvc` e `Mockito` sob o banco em memória H2 com extensão espacial.*
