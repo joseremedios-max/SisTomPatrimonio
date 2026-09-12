@@ -27,6 +27,7 @@ public class VistoriaService {
     private final BemCulturalRepository bemCulturalRepository;
     private final UsuarioRepository usuarioRepository;
     private final OrganizacaoRepository organizacaoRepository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public VistoriaDTOs.Response criar(VistoriaDTOs.Request request) {
@@ -71,6 +72,29 @@ public class VistoriaService {
         return vistoriaRepository.findByBemIdOrderByAgendadaEmDesc(bemId).stream()
                 .map(this::converterParaResponse)
                 .toList();
+    }
+
+    @Transactional
+    public VistoriaDTOs.Response homologar(UUID vistoriaId, UUID usuarioHomologadorId) {
+        Vistoria vistoria = vistoriaRepository.findById(vistoriaId)
+                .orElseThrow(() -> new RegraNegocioRunTime("Vistoria não encontrada."));
+
+        Usuario homologador = usuarioRepository.findById(usuarioHomologadorId)
+                .orElseThrow(() -> new RegraNegocioRunTime("Usuário homologador não encontrado."));
+
+        vistoria.homologar(homologador);
+        Vistoria salva = vistoriaRepository.save(vistoria);
+
+        eventPublisher.publishEvent(br.com.SisTomPatrimonio.SisTomPatrimonio.events.AuditoriaEvent.builder()
+                .entidade("VISTORIA")
+                .entidadeId(salva.getId())
+                .acao("HOMOLOGACAO")
+                .usuarioId(homologador.getId())
+                .dadosNovos(java.util.Map.of("status", salva.getStatus(), "homologada", true))
+                .origem("VISTORIA_SERVICE")
+                .build());
+
+        return converterParaResponse(salva);
     }
 
     private VistoriaDTOs.Response converterParaResponse(Vistoria vistoria) {

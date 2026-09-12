@@ -73,4 +73,26 @@ public class Protecao {
     @Builder.Default
     @Column(name = "criado_em", nullable = false, updatable = false)
     private OffsetDateTime criadoEm = OffsetDateTime.now();
+
+    public void homologarTombamento(String livroTombo, String numeroInscricao, String folha, String atoNormativo) {
+        if (livroTombo == null || livroTombo.isBlank()) {
+            throw new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Livro do Tombo deve ser informado para homologação.");
+        }
+        if (numeroInscricao == null || numeroInscricao.isBlank()) {
+            throw new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Número de inscrição deve ser informado para homologação.");
+        }
+        if (atoNormativo == null || atoNormativo.isBlank()) {
+            throw new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Ato normativo deve ser informado para homologação.");
+        }
+        this.fase = "HOMOLOGADO";
+        this.livroTombo = livroTombo;
+        this.numeroInscricao = numeroInscricao;
+        this.folha = folha;
+        this.atoNormativo = atoNormativo;
+        this.vigente = true;
+        this.dataDecisao = LocalDate.now();
+        if (this.bem != null) {
+            this.bem.tombar();
+        }
+    }
 }

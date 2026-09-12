@@ -8,6 +8,7 @@ import br.com.SisTomPatrimonio.SisTomPatrimonio.models.entities.Organizacao;
 import br.com.SisTomPatrimonio.SisTomPatrimonio.models.entities.Usuario;
 import br.com.SisTomPatrimonio.SisTomPatrimonio.models.enums.NaturezaBem;
 import br.com.SisTomPatrimonio.SisTomPatrimonio.models.enums.PerfilUsuario;
+import br.com.SisTomPatrimonio.SisTomPatrimonio.models.enums.StatusBemCultural;
 import br.com.SisTomPatrimonio.SisTomPatrimonio.repositories.BemCulturalRepository;
 import br.com.SisTomPatrimonio.SisTomPatrimonio.repositories.LocalizacaoBemRepository;
 import br.com.SisTomPatrimonio.SisTomPatrimonio.repositories.OrganizacaoRepository;
@@ -41,6 +42,9 @@ class BemCulturalServiceTest {
 
     @Mock
     private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private BemCulturalService bemCulturalService;
@@ -83,5 +87,53 @@ class BemCulturalServiceTest {
         assertThat(response.getNome()).isEqualTo("Casarão Histórico");
         verify(bemRepository, times(1)).save(any(BemCultural.class));
         verify(localizacaoRepository, never()).save(any());
+        verify(eventPublisher, times(1)).publishEvent(any(br.com.SisTomPatrimonio.SisTomPatrimonio.events.AuditoriaEvent.class));
+    }
+
+    @Test
+    @DisplayName("Deve publicar bem cultural com sucesso e emitir evento de auditoria")
+    void devePublicarBemCultural() {
+        UUID bemId = UUID.randomUUID();
+        BemCultural bem = BemCultural.builder()
+                .id(bemId)
+                .codigo("BEM-101")
+                .nome("Forte Histórico")
+                .natureza(NaturezaBem.MATERIAL_EDIFICADO.name())
+                .status("RASCUNHO")
+                .organizacaoResponsavel(organizacao)
+                .build();
+
+        when(bemRepository.findById(bemId)).thenReturn(Optional.of(bem));
+        when(bemRepository.save(any(BemCultural.class))).thenAnswer(i -> i.getArgument(0));
+
+        BemCulturalResponseDTO response = bemCulturalService.publicar(bemId, usuarioId);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(StatusBemCultural.PUBLICADO);
+        verify(eventPublisher, times(1)).publishEvent(any(br.com.SisTomPatrimonio.SisTomPatrimonio.events.AuditoriaEvent.class));
+    }
+
+    @Test
+    @DisplayName("Deve arquivar bem cultural com sucesso e emitir evento de auditoria")
+    void deveArquivarBemCultural() {
+        UUID bemId = UUID.randomUUID();
+        BemCultural bem = BemCultural.builder()
+                .id(bemId)
+                .codigo("BEM-102")
+                .nome("Monumento Histórico")
+                .natureza(NaturezaBem.MATERIAL_EDIFICADO.name())
+                .status("PUBLICADO")
+                .organizacaoResponsavel(organizacao)
+                .build();
+
+        when(bemRepository.findById(bemId)).thenReturn(Optional.of(bem));
+        when(usuarioRepository.findById(usuarioId)).thenReturn(Optional.of(usuario));
+        when(bemRepository.save(any(BemCultural.class))).thenAnswer(i -> i.getArgument(0));
+
+        BemCulturalResponseDTO response = bemCulturalService.arquivar(bemId, usuarioId);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(StatusBemCultural.ARQUIVADO);
+        verify(eventPublisher, times(1)).publishEvent(any(br.com.SisTomPatrimonio.SisTomPatrimonio.events.AuditoriaEvent.class));
     }
 }

@@ -83,4 +83,31 @@ public class Vistoria {
     @Builder.Default
     @Column(name = "criado_em", nullable = false, updatable = false)
     private OffsetDateTime criadoEm = OffsetDateTime.now();
+
+    public void registrarRealizacao(OffsetDateTime realizadaEm, String situacaoConservacao, String nivelRisco, String resumo, String recomendacao) {
+        if (Boolean.TRUE.equals(this.homologada)) {
+            throw new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Não é possível alterar uma vistoria que já foi homologada.");
+        }
+        this.status = br.com.SisTomPatrimonio.SisTomPatrimonio.models.enums.StatusVistoria.REALIZADA.name();
+        this.realizadaEm = realizadaEm != null ? realizadaEm : OffsetDateTime.now();
+        this.situacaoConservacao = situacaoConservacao;
+        this.nivelRisco = nivelRisco;
+        this.resumo = resumo;
+        this.recomendacao = recomendacao;
+    }
+
+    public void homologar(Usuario homologador) {
+        if (!br.com.SisTomPatrimonio.SisTomPatrimonio.models.enums.StatusVistoria.REALIZADA.name().equals(this.status)) {
+            throw new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Apenas vistorias com status REALIZADA podem ser homologadas.");
+        }
+        if (Boolean.TRUE.equals(this.homologada)) {
+            throw new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Esta vistoria já foi homologada anteriormente.");
+        }
+        if (homologador == null) {
+            throw new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Usuário homologador deve ser informado.");
+        }
+        this.homologada = true;
+        this.homologadaPor = homologador;
+        this.homologadaEm = OffsetDateTime.now();
+    }
 }

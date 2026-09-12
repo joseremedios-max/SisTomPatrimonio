@@ -40,4 +40,18 @@ public class BemCulturalController {
         Page<BemCulturalResponseDTO> result = bemCulturalService.buscarPorProximidade(latitude, longitude, raioMetros, pageable);
         return ResponseEntity.ok(result);
     }
+
+    @PatchMapping("/{id}/publicar")
+    public ResponseEntity<BemCulturalResponseDTO> publicar(
+            @PathVariable UUID id,
+            @RequestHeader("X-Usuario-Id") UUID usuarioId) {
+        return ResponseEntity.ok(bemCulturalService.publicar(id, usuarioId));
+    }
+
+    @PatchMapping("/{id}/arquivar")
+    public ResponseEntity<BemCulturalResponseDTO> arquivar(
+            @PathVariable UUID id,
+            @RequestHeader("X-Usuario-Id") UUID usuarioId) {
+        return ResponseEntity.ok(bemCulturalService.arquivar(id, usuarioId));
+    }
 }

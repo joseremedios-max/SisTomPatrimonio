@@ -142,4 +142,30 @@ public class BemCultural {
 
     @Column(name = "arquivado_em")
     private OffsetDateTime arquivadoEm;
+
+    public void publicar() {
+        if ("ARQUIVADO".equals(this.status)) {
+            throw new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Não é possível publicar um bem cultural arquivado.");
+        }
+        this.status = "PUBLICADO";
+        this.publicadoEm = OffsetDateTime.now();
+        this.atualizadoEm = OffsetDateTime.now();
+    }
+
+    public void arquivar(Usuario responsavel) {
+        this.status = "ARQUIVADO";
+        this.arquivadoEm = OffsetDateTime.now();
+        this.atualizadoPor = responsavel;
+        this.atualizadoEm = OffsetDateTime.now();
+    }
+
+    public void tombar() {
+        this.status = "TOMBADO";
+        this.atualizadoEm = OffsetDateTime.now();
+    }
+
+    public void registrarSalvaguarda() {
+        this.status = "REGISTRADO";
+        this.atualizadoEm = OffsetDateTime.now();
+    }
 }

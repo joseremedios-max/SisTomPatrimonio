@@ -28,4 +28,11 @@ public class VistoriaController {
     public ResponseEntity<List<VistoriaDTOs.Response>> listarPorBem(@PathVariable UUID bemId) {
         return ResponseEntity.ok(vistoriaService.listarPorBem(bemId));
     }
+
+    @PostMapping("/{id}/homologar")
+    public ResponseEntity<VistoriaDTOs.Response> homologar(
+            @PathVariable UUID id,
+            @RequestHeader("X-Usuario-Id") UUID usuarioId) {
+        return ResponseEntity.ok(vistoriaService.homologar(id, usuarioId));
+    }
 }

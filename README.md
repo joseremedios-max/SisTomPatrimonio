@@ -1,4 +1,4 @@
-# 🏛️ SIP-MA — Sistema de Informação do Patrimônio (Maranhão)
+# SIP-MA — Sistema de Informação do Patrimônio (Maranhão)
 
 O **SisTomPatrimonio** é uma plataforma corporativa e estadual de geoprocessamento, salvaguarda e controle documental projetada para mapear, proteger e fiscalizar a herança cultural tangível (bens materiais edificados), intangível (patrimônio imaterial/folclore) e arqueológica do Estado do Maranhão.
 
@@ -9,7 +9,7 @@ O **SisTomPatrimonio** é uma plataforma corporativa e estadual de geoprocessame
 Antes de contribuir, leia o [guia de contribuição](CONTRIBUTING.md). O projeto utiliza Pull Requests para alterações na branch `main`, validação automática pelo GitHub Actions e revisão definida em [.github/CODEOWNERS](.github/CODEOWNERS).
 
 
-## 📋 Sumário
+## Sumário
 1. [Visão Geral e Propósito do Sistema](#1-visão-geral-e-propósito-do-sistema)
 2. [Análise do Domínio e Desafios de Negócio](#2-análise-do-domínio-e-desafios-de-negócio)
 3. [Escolhas Arquiteturais e Padrões de Engenharia](#3-escolhas-arquiteturais-e-padrões-de-engenharia)
@@ -18,10 +18,10 @@ Antes de contribuir, leia o [guia de contribuição](CONTRIBUTING.md). O projeto
 6. [Catálogo Completo de APIs RESTful](#6-catálogo-completo-de-apis-restful)
 7. [Estratégia de Qualidade e Testes Automatizados](#7-estratégia-de-qualidade-e-testes-automatizados)
 8. [Análise Crítica: Falhas Críticas e Paridade Ambiental (H2 vs. Testcontainers)](#8-análise-crítica-falhas-críticas-e-paridade-ambiental-h2-vs-testcontainers)
-9. [🚀 Guia Passo a Passo de Execução para Iniciantes](#9--guia-passo-a-passo-de-execução-para-iniciantes)
+9. [Guia Passo a Passo de Execução para Iniciantes](#9--guia-passo-a-passo-de-execução-para-iniciantes)
 
 
-## 1.🚀 Diferenciais de Engenharia & Arquitetura
+## 1. Diferenciais de Engenharia & Arquitetura
 
 Ao contrário de sistemas tradicionais de tombamento interno de ativos, o SIP-MA foi projetado para escala estadual macro, incorporando decisões arquiteturais avançadas de software:
 
@@ -101,7 +101,7 @@ O backend do SIP-MA adota um padrão rigoroso de **Arquitetura em Camadas Desaco
 * **Tratamento Global de Exceções:** Exceções de negócio lançam a classe personalizada `RegraNegocioRunTime`, que é capturada e convertida automaticamente em respostas HTTP `400 Bad Request`.
 
 
-## 📂 Estrutura do Projeto Backend
+## 4. Estrutura do Projeto Backend
 
 ```text
 SisTomPatrimonio-api/
@@ -240,7 +240,7 @@ SisTomPatrimonio-api/
 
 ---
 
-## 🗄️ Modelo de Dados (15 Entidades Relacionais & Espaciais)
+## Modelo de Dados (15 Entidades Relacionais & Espaciais)
 
 | Entidade | Descrição / Função Arquitetural |
 | :--- | :--- |
@@ -290,7 +290,7 @@ O banco de dados relacional e geoespacial do SIP-MA é composto por **15 tabelas
 
 ---
 
-## 🔌 Principais Endpoints da API REST
+## Principais Endpoints da API REST
 
 * **`POST /api/usuarios`** — Cadastro de usuários e peritos.
 * **`POST /api/bens`** — Cadastro de novos bens culturais materiais, imateriais ou arqueológicos.

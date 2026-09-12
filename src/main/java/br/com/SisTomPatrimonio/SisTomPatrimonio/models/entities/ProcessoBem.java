@@ -3,8 +3,6 @@ package br.com.SisTomPatrimonio.SisTomPatrimonio.models.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.OffsetDateTime;
-
 @Entity
 @Table(name = "processo_bem")
 @Getter
@@ -18,23 +16,21 @@ public class ProcessoBem {
     private ProcessoBemId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("processoJudicialId")
-    @JoinColumn(name = "processo_judicial_id")
+    @MapsId("processoId")
+    @JoinColumn(name = "processo_id", nullable = false)
     private ProcessoJudicial processoJudicial;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("bemCulturalId")
-    @JoinColumn(name = "bem_cultural_id")
+    @MapsId("bemId")
+    @JoinColumn(name = "bem_id", nullable = false)
     private BemCultural bemCultural;
+
+    @Column(name = "papel_do_bem", length = 100)
+    private String papelDoBem;
+
+    @Column(name = "impacto_conservacao", columnDefinition = "TEXT")
+    private String impactoConservacao;
 
     @Column(name = "observacao", columnDefinition = "TEXT")
     private String observacao;
-
-    @Column(name = "vincular_em", nullable = false, updatable = false)
-    private OffsetDateTime vincularEm;
-
-    @PrePersist
-    protected void onCreate() {
-        this.vincularEm = OffsetDateTime.now();
-    }
 }

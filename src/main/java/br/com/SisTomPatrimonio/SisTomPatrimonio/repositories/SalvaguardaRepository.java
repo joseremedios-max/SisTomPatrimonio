@@ -15,5 +15,5 @@ public interface SalvaguardaRepository extends JpaRepository<Salvaguarda, UUID> 
 
     List<Salvaguarda> findByStatus(StatusSalvaguarda status);
 
-    List<Salvaguarda> findByResponsavelId(UUID responsavelId);
+    List<Salvaguarda> findByOrganizacaoResponsavelId(UUID organizacaoId);
 }

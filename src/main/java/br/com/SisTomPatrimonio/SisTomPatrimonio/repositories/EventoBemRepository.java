@@ -13,7 +13,7 @@ public interface EventoBemRepository extends JpaRepository<EventoBem, UUID> {
 
     List<EventoBem> findByBemCulturalId(UUID bemId);
 
-    List<EventoBem> findByTipoEvento(EventoTipo tipoEvento);
+    List<EventoBem> findByTipo(EventoTipo tipo);
 
-    List<EventoBem> findByResponsavelId(UUID responsavelId);
+    List<EventoBem> findByOrganizacaoId(UUID organizacaoId);
 }

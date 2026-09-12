@@ -30,7 +30,9 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .mvn-test-output.txt
 mvn-*.txt
 warning-check.txt
@@ -38,3 +40,7 @@ warning-check.txt
 .env
 .env.*
 !.env.example
+
+### Documentos de projeto ###
+documentos_base/
+.contexto/

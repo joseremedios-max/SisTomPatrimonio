@@ -34,16 +34,17 @@ public class BemCulturalService {
     private final LocalizacaoBemRepository localizacaoRepository;
     private final OrganizacaoRepository organizacaoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     @Transactional
     public BemCulturalResponseDTO cadastrarBem(BemCulturalRequestDTO dto, UUID usuarioAutenticadoId) {
         Organizacao org = organizacaoRepository.findById(dto.getOrganizacaoResponsavelId())
-                .orElseThrow(() -> new IllegalArgumentException("Organização não encontrada."));
+                .orElseThrow(() -> new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Organização não encontrada."));
 
         Usuario usuario = usuarioRepository.findById(usuarioAutenticadoId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+                .orElseThrow(() -> new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Usuário não encontrado."));
 
         BemCultural bem = BemCultural.builder()
                 .codigo(dto.getCodigo())
@@ -81,7 +82,59 @@ public class BemCulturalService {
             localizacaoRepository.save(localizacao);
         }
 
+        eventPublisher.publishEvent(br.com.SisTomPatrimonio.SisTomPatrimonio.events.AuditoriaEvent.builder()
+                .entidade("BEM_CULTURAL")
+                .entidadeId(bemSalvo.getId())
+                .acao("CRIACAO")
+                .usuarioId(usuario.getId())
+                .dadosNovos(java.util.Map.of("codigo", bemSalvo.getCodigo(), "nome", bemSalvo.getNome(), "natureza", bemSalvo.getNatureza()))
+                .origem("BEM_CULTURAL_SERVICE")
+                .build());
+
         return converterParaResponseDTO(bemSalvo, dto.getLatitude(), dto.getLongitude());
+    }
+
+    @Transactional
+    public BemCulturalResponseDTO publicar(UUID bemId, UUID usuarioId) {
+        BemCultural bem = bemRepository.findById(bemId)
+                .orElseThrow(() -> new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Bem cultural não encontrado."));
+
+        bem.publicar();
+        BemCultural salvo = bemRepository.save(bem);
+
+        eventPublisher.publishEvent(br.com.SisTomPatrimonio.SisTomPatrimonio.events.AuditoriaEvent.builder()
+                .entidade("BEM_CULTURAL")
+                .entidadeId(salvo.getId())
+                .acao("PUBLICACAO")
+                .usuarioId(usuarioId)
+                .dadosNovos(java.util.Map.of("status", salvo.getStatus(), "publicadoEm", salvo.getPublicadoEm()))
+                .origem("BEM_CULTURAL_SERVICE")
+                .build());
+
+        return converterParaResponseDTO(salvo, null, null);
+    }
+
+    @Transactional
+    public BemCulturalResponseDTO arquivar(UUID bemId, UUID usuarioId) {
+        BemCultural bem = bemRepository.findById(bemId)
+                .orElseThrow(() -> new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Bem cultural não encontrado."));
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new br.com.SisTomPatrimonio.SisTomPatrimonio.exceptions.RegraNegocioRunTime("Usuário não encontrado."));
+
+        bem.arquivar(usuario);
+        BemCultural salvo = bemRepository.save(bem);
+
+        eventPublisher.publishEvent(br.com.SisTomPatrimonio.SisTomPatrimonio.events.AuditoriaEvent.builder()
+                .entidade("BEM_CULTURAL")
+                .entidadeId(salvo.getId())
+                .acao("ARQUIVAMENTO")
+                .usuarioId(usuario.getId())
+                .dadosNovos(java.util.Map.of("status", salvo.getStatus(), "arquivadoEm", salvo.getArquivadoEm()))
+                .origem("BEM_CULTURAL_SERVICE")
+                .build());
+
+        return converterParaResponseDTO(salvo, null, null);
     }
 
     @Transactional(readOnly = true)

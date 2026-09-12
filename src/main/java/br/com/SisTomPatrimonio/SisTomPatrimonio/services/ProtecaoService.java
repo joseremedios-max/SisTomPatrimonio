@@ -23,6 +23,7 @@ public class ProtecaoService {
     private final ProtecaoRepository protecaoRepository;
     private final BemCulturalRepository bemCulturalRepository;
     private final OrganizacaoRepository organizacaoRepository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public ProtecaoDTOs.Response criar(ProtecaoDTOs.Request request) {
@@ -51,7 +52,33 @@ public class ProtecaoService {
                 .vigente(true)
                 .build();
 
+        if ("HOMOLOGADO".equalsIgnoreCase(request.getFase())) {
+            bem.tombar();
+            bemCulturalRepository.save(bem);
+        }
+
         Protecao salva = protecaoRepository.save(protecao);
+        return converterParaResponse(salva);
+    }
+
+    @Transactional
+    public ProtecaoDTOs.Response homologar(UUID protecaoId, String livroTombo, String numeroInscricao, String folha, String atoNormativo, UUID usuarioId) {
+        Protecao protecao = protecaoRepository.findById(protecaoId)
+                .orElseThrow(() -> new RegraNegocioRunTime("Processo de proteção não encontrado."));
+
+        protecao.homologarTombamento(livroTombo, numeroInscricao, folha, atoNormativo);
+        bemCulturalRepository.save(protecao.getBem());
+        Protecao salva = protecaoRepository.save(protecao);
+
+        eventPublisher.publishEvent(br.com.SisTomPatrimonio.SisTomPatrimonio.events.AuditoriaEvent.builder()
+                .entidade("PROTECAO")
+                .entidadeId(salva.getId())
+                .acao("HOMOLOGACAO_TOMBAMENTO")
+                .usuarioId(usuarioId)
+                .dadosNovos(java.util.Map.of("livroTombo", livroTombo, "numeroInscricao", numeroInscricao, "fase", "HOMOLOGADO"))
+                .origem("PROTECAO_SERVICE")
+                .build());
+
         return converterParaResponse(salva);
     }
 
