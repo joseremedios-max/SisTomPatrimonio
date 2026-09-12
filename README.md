@@ -114,15 +114,45 @@ SisTomPatrimonio-api/
     │       └── db/migration/
     │           └── V1__criar_schema_SisTomPatrimonio.sql # Migration DDL do PostGIS
     │
-    └── test/                               # Suíte de Testes Automatizados
-        └── java/br/com/SisTomPatrimonio/SisTomPatrimonio/controllers/
-            ├── BemCulturalControllerTest.java
-            ├── EventoBemControllerTest.java
-            ├── ProcessoJudicialControllerTest.java
-            ├── ProtecaoControllerTest.java
-            ├── SalvaguardaControllerTest.java
-            ├── UsuarioControllerTest.java
-            └── VistoriaControllerTest.java
+    └── test/
+    └── java/
+        └── br/com/SisTomPatrimonio/SisTomPatrimonio/
+            │
+            ├── controllers/
+            │   ├── BemCulturalControllerTest.java
+            │   ├── DocumentoControllerTest.java         (✨ NOVO)
+            │   ├── EventoBemControllerTest.java
+            │   ├── ProcessoJudicialControllerTest.java
+            │   ├── ProtecaoControllerTest.java          (✨ NOVO)
+            │   ├── SalvaguardaControllerTest.java
+            │   ├── UsuarioControllerTest.java
+            │   └── VistoriaControllerTest.java          (✨ NOVO)
+            │
+            ├── repositories/
+            │   ├── AuditoriaRepositoryTest.java
+            │   ├── BemCulturalRepositoryTest.java       (✨ NOVO)
+            │   ├── DocumentoRepositoryTest.java
+            │   ├── EventoBemRepositoryTest.java         (✨ NOVO)
+            │   ├── MunicipioRepositoryTest.java         (✨ NOVO)
+            │   ├── OrganizacaoRepositoryTest.java       (✨ NOVO)
+            │   ├── ProcessoJudicialRepositoryTest.java  (✨ NOVO)
+            │   ├── ProtecaoRepositoryTest.java
+            │   ├── SalvaguardaRepositoryTest.java       (✨ NOVO)
+            │   ├── UsuarioRepositoryTest.java
+            │   └── VistoriaRepositoryTest.java
+            │
+            ├── services/
+            │   ├── BemCulturalServiceTest.java
+            │   ├── DocumentoServiceTest.java            (✨ NOVO)
+            │   ├── EventoBemServiceTest.java            (✨ NOVO)
+            │   ├── ProcessoJudicialServiceTest.java     (✨ NOVO)
+            │   ├── ProtecaoServiceTest.java             (✨ NOVO)
+            │   ├── SalvaguardaServiceTest.java          (✨ NOVO)
+            │   ├── UsuarioServiceTest.java
+            │   └── VistoriaServiceTest.java             (✨ NOVO)
+            │
+            ├── AbstractIntegrationTest.java
+            └── SisTomPatrimonioApplicationTests.java
 ```
 
 ---
