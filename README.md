@@ -37,7 +37,7 @@ Ao contrário de sistemas tradicionais de tombamento interno de ativos, o SIP-MA
 O Sistema de Informação do Patrimônio do Estado do Maranhão (**SIP-MA**) atua como a infraestrutura de dados espaciais e administrativos centralizada para a **SECMA** (Secretaria de Estado da Cultura do Maranhão), operando em sintonia com o **IPHAN**, Prefeituras Municipais e o **Ministério Público Estadual** .
 
 ### O Escopo Abrange as 3 Naturezas do Patrimônio Cultural :
-1. **Material Edificado:** Casarões históricos, igrejas, monumentos e conjuntos urbanos tombados de cidades como São Luís, Alcântara e Caxias [116].
+1. **Material Edificado:** Casarões históricos, igrejas, monumentos e conjuntos urbanos tombados de cidades como São Luís, Alcântara e Caxias .
 2. **Imaterial (Intangível):** Manifestações culturais, tradições, festas, saberes e celebrações (ex: Bumba Meu Boi, Tambor de Crioula, Rito do Divino Espírito Santo) .
 3. **Arqueológico:** Sítios arqueológicos pré-coloniais, sambaquis, inscrições rupestres e ruínas históricas .
 
@@ -262,7 +262,7 @@ SisTomPatrimonio-api/
 
 ## 5. Modelo de Dados Físico, Espacial (PostGIS) e Híbrido (JSONB)
 
-O banco de dados relacional e geoespacial do SIP-MA é composto por **15 tabelas interdependentes** [135]:
+O banco de dados relacional e geoespacial do SIP-MA é composto por **15 tabelas interdependentes**:
 
 | Tabela / Entidade | Função no Sistema | Tipo de Dados / Destaque Arquitetural |
 | :--- | :--- | :--- |
@@ -339,16 +339,16 @@ O banco de dados relacional e geoespacial do SIP-MA é composto por **15 tabelas
 
 ## 7. Estratégia de Qualidade e Testes Automatizados
 
-O SIP-MA adota uma abordagem de testes sistemática e repetível estruturada no padrão **Cenário -> Ação -> Verificação** [1, 2]:
+O SIP-MA adota uma abordagem de testes sistemática e repetível estruturada no padrão **Cenário -> Ação -> Verificação** :
 
 1. **Testes de Unidade nos Services (JUnit 5 + Mockito):**
    * Avaliam isoladamente as regras de negócio em métodos das classes `@Service` [4].
-   * Utilizam `@Mock` e `@InjectMocks` para isolar chamadas de banco e validar se restrições violadas lançam a exceção `RegraNegocioRunTime` [88, 97].
+   * Utilizam `@Mock` e `@InjectMocks` para isolar chamadas de banco e validar se restrições violadas lançam a exceção `RegraNegocioRunTime`.
 2. **Testes de Controllers REST (MockMvc + `@WebMvcTest`):**
-   * Validam mapeamentos de rotas, serialização JSON e códigos de status HTTP (`201 Created`, `200 OK`, `400 Bad Request`) [98, 99].
-   * Utilizam o utilitário `MockMvc` com `@MockBean` para simular requisições web sem subir o servidor Tomcat [98, 99].
+   * Validam mapeamentos de rotas, serialização JSON e códigos de status HTTP (`201 Created`, `200 OK`, `400 Bad Request`) .
+   * Utilizam o utilitário `MockMvc` com `@MockBean` para simular requisições web sem subir o servidor Tomcat .
 3. **Testes de Persistência e Repositórios (H2 em Memória):**
-   * Utilizam `@SpringBootTest` com `@ActiveProfiles("test")` para testar mapeamentos JPA, constraints e consultas em JPQL contra um banco em memória isolado (`jdbc:h2:mem:sipma_test`) [50, 52].
+   * Utilizam `@SpringBootTest` com `@ActiveProfiles("test")` para testar mapeamentos JPA, constraints e consultas em JPQL contra um banco em memória isolado (`jdbc:h2:mem:sipma_test`).
 
 ---
 
