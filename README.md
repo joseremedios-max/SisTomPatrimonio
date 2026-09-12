@@ -382,7 +382,7 @@ A decisão de substituir totalmente o **H2** pelo **Testcontainers** (`postgis/p
 ---
 
 
-## 9. 🚀 Guia Passo a Passo de Execução para Iniciantes
+## 9. 🚀 Guia Passo a Passo de Execução
 
 Este guia foi elaborado para que qualquer pessoa consiga configurar, rodar, executar a suíte de testes e testar os endpoints REST do SIP-MA do zero.
 
