@@ -1,0 +1,496 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-11T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_sisTomPatrimonio",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "SisTomPatrimonio API",
+      "description": "Coleção de requisições alinhadas aos controllers reais do backend atual.",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_local",
+      "_type": "environment",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "Local",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "usuario_id": "11111111-1111-1111-1111-111111111111",
+        "bem_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        "vistorias_id": "22222222-3333-4444-5555-666666666666",
+        "protecao_id": "77777777-8888-9999-aaaa-bbbbbbbbbbbb",
+        "processo_id": "cccccccc-dddd-eeee-ffff-001122334455",
+        "token": "TOKEN_AQUI"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url",
+          "usuario_id",
+          "bem_id",
+          "vistorias_id",
+          "protecao_id",
+          "processo_id",
+          "token"
+        ]
+      },
+      "color": "#A6D0FF",
+      "isPrivate": false
+    },
+    {
+      "_id": "fld_usuarios",
+      "_type": "request_group",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "1. Usuários",
+      "environment": {}
+    },
+    {
+      "_id": "req_usuarios_post",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "POST /api/usuarios",
+      "method": "POST",
+      "url": "{{ base_url }}/api/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Maria da Silva\",\n  \"email\": \"maria@teste.com\",\n  \"senha\": \"Senha@123\",\n  \"perfil\": \"ADMIN\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Content-Type"
+        ]
+      }
+    },
+    {
+      "_id": "req_usuarios_login",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "POST /api/usuarios/autenticar",
+      "method": "POST",
+      "url": "{{ base_url }}/api/usuarios/autenticar",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"maria@teste.com\",\n  \"senha\": \"Senha@123\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Content-Type"
+        ]
+      }
+    },
+    {
+      "_id": "fld_bens",
+      "_type": "request_group",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "2. Bens culturais",
+      "environment": {}
+    },
+    {
+      "_id": "req_bens_post",
+      "_type": "request",
+      "parentId": "fld_bens",
+      "name": "POST /api/v1/bens-culturais",
+      "method": "POST",
+      "url": "{{ base_url }}/api/v1/bens-culturais",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"codigo\": \"BMC-001\",\n  \"natureza\": \"MATERIAL_EDIFICADO\",\n  \"nome\": \"Casa Colonial do Centro Histórico\",\n  \"resumoPublico\": \"Imóvel histórico do século XVIII.\",\n  \"descricao\": \"Construção em alvenaria com valor patrimonial relevante.\",\n  \"observacoesInternas\": \"Observação interna para equipe técnica.\",\n  \"organizacaoResponsavelId\": \"{{ usuario_id }}\",\n  \"tipoImovel\": \"CASARAO_COLONIAL\",\n  \"tipologiaArquitetonica\": \"COLONIAL_LUSO_BRASILEIRO\",\n  \"areaConstruidaM2\": 420.5,\n  \"latitude\": -2.5307,\n  \"longitude\": -44.3028,\n  \"logradouro\": \"Rua da Cultura\",\n  \"numero\": \"123\",\n  \"bairro\": \"Centro\",\n  \"municipioId\": \"{{ usuario_id }}\",\n  \"dadosEspecificos\": {\n    \"estilo\": \"Colonial\",\n    \"situacao\": \"Em restauração\"\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "name": "X-Usuario-Id",
+          "value": "{{ usuario_id }}"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Content-Type",
+          "X-Usuario-Id"
+        ]
+      }
+    },
+    {
+      "_id": "req_bens_proximidade",
+      "_type": "request",
+      "parentId": "fld_bens",
+      "name": "GET /api/v1/bens-culturais/proximidade",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/bens-culturais/proximidade?latitude=-2.5307&longitude=-44.3028&raioMetros=1000&page=0&size=20",
+      "body": {},
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Accept"
+        ]
+      }
+    },
+    {
+      "_id": "fld_documentos",
+      "_type": "request_group",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "3. Documentos",
+      "environment": {}
+    },
+    {
+      "_id": "req_documentos_post",
+      "_type": "request",
+      "parentId": "fld_documentos",
+      "name": "POST /api/v1/documentos",
+      "method": "POST",
+      "url": "{{ base_url }}/api/v1/documentos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Laudo técnico da fachada\",\n  \"categoria\": \"LAUDO_TECNICO\",\n  \"classificacao\": \"INTERNA\",\n  \"bemId\": \"{{ bem_id }}\",\n  \"nomeArquivo\": \"laudo_fachada.pdf\",\n  \"mimeType\": \"application/pdf\",\n  \"tamanhoBytes\": 245760,\n  \"storageKey\": \"s3://bucket/patrimonio/laudo_fachada.pdf\",\n  \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n  \"dataDocumento\": \"2026-09-11\",\n  \"descricao\": \"Laudo de inspeção da fachada principal.\",\n  \"metadados\": {\n    \"tipo\": \"PDF\",\n    \"disciplinas\": [\"Arquitetura\", \"Conservação\"]\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Content-Type"
+        ]
+      }
+    },
+    {
+      "_id": "req_documentos_por_bem",
+      "_type": "request",
+      "parentId": "fld_documentos",
+      "name": "GET /api/v1/documentos/bem/{bemId}",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/documentos/bem/{{ bem_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Accept"
+        ]
+      }
+    },
+    {
+      "_id": "fld_vistorias",
+      "_type": "request_group",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "4. Vistorias",
+      "environment": {}
+    },
+    {
+      "_id": "req_vistorias_post",
+      "_type": "request",
+      "parentId": "fld_vistorias",
+      "name": "POST /api/v1/vistorias",
+      "method": "POST",
+      "url": "{{ base_url }}/api/v1/vistorias",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"codigo\": \"VIS-001\",\n  \"bemId\": \"{{ bem_id }}\",\n  \"responsavelId\": \"{{ usuario_id }}\",\n  \"organizacaoId\": \"{{ usuario_id }}\",\n  \"agendadaEm\": \"2026-09-20T09:00:00-03:00\",\n  \"situacaoConservacao\": \"EM_ATENCAO\",\n  \"nivelRisco\": \"MEDIO\",\n  \"resumo\": \"Avaliação técnica inicial da edificação.\",\n  \"recomendacao\": \"Inspecionar telhado e fundações.\",\n  \"proximaVistoria\": \"2026-12-20\",\n  \"equipe\": {\n    \"responsavel\": \"Maria da Silva\",\n    \"membros\": [\n      \"Carlos\",\n      \"Luiza\"\n    ]\n  },\n  \"patologias\": {\n    \"lista\": [\n      \"Umidade em paredes\",\n      \"Trincas em reboco\"\n    ]\n  }\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Content-Type"
+        ]
+      }
+    },
+    {
+      "_id": "req_vistorias_por_bem",
+      "_type": "request",
+      "parentId": "fld_vistorias",
+      "name": "GET /api/v1/vistorias/bem/{bemId}",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/vistorias/bem/{{ bem_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Accept"
+        ]
+      }
+    },
+    {
+      "_id": "fld_protecoes",
+      "_type": "request_group",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "5. Proteções",
+      "environment": {}
+    },
+    {
+      "_id": "req_protecoes_post",
+      "_type": "request",
+      "parentId": "fld_protecoes",
+      "name": "POST /api/v1/protecoes",
+      "method": "POST",
+      "url": "{{ base_url }}/api/v1/protecoes",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"bemId\": \"{{ bem_id }}\",\n  \"numeroProcesso\": \"SECMA-2026/0001\",\n  \"organizacaoId\": \"{{ usuario_id }}\",\n  \"esfera\": \"ESTADUAL\",\n  \"fase\": \"HOMOLOGADO\",\n  \"tipoProtecao\": \"TOMBAMENTO_INTEGRAL\",\n  \"dataAbertura\": \"2025-01-10\",\n  \"dataDecisao\": \"2026-02-20\",\n  \"atoNormativo\": \"Decreto Estadual nº 12.345/2026\",\n  \"livroTombo\": \"Livro 02\",\n  \"numeroInscricao\": \"FL-12\",\n  \"observacao\": \"Proteção em vigor.\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Content-Type"
+        ]
+      }
+    },
+    {
+      "_id": "req_protecoes_por_bem",
+      "_type": "request",
+      "parentId": "fld_protecoes",
+      "name": "GET /api/v1/protecoes/bem/{bemId}",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/protecoes/bem/{{ bem_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Accept"
+        ]
+      }
+    },
+    {
+      "_id": "fld_eventos",
+      "_type": "request_group",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "6. Eventos",
+      "environment": {}
+    },
+    {
+      "_id": "req_eventos_post",
+      "_type": "request",
+      "parentId": "fld_eventos",
+      "name": "POST /api/eventos",
+      "method": "POST",
+      "url": "{{ base_url }}/api/eventos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"bemCulturalId\": \"{{ bem_id }}\",\n  \"tipo\": \"RESTAURACAO\",\n  \"titulo\": \"Restauração da cobertura\",\n  \"descricao\": \"Reparo estrutural da cobertura principal.\",\n  \"dataInicio\": \"2024-05-01\",\n  \"dataFim\": \"2025-02-28\",\n  \"responsavelId\": \"{{ usuario_id }}\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Content-Type"
+        ]
+      }
+    },
+    {
+      "_id": "req_eventos_por_bem",
+      "_type": "request",
+      "parentId": "fld_eventos",
+      "name": "GET /api/eventos/bem/{bemId}",
+      "method": "GET",
+      "url": "{{ base_url }}/api/eventos/bem/{{ bem_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Accept"
+        ]
+      }
+    },
+    {
+      "_id": "fld_processos_judiciais",
+      "_type": "request_group",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "7. Processos judiciais",
+      "environment": {}
+    },
+    {
+      "_id": "req_processos_post",
+      "_type": "request",
+      "parentId": "fld_processos_judiciais",
+      "name": "POST /api/processos-judiciais",
+      "method": "POST",
+      "url": "{{ base_url }}/api/processos-judiciais",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"numeroProcesso\": \"0001234-56.2026.8.10.0001\",\n  \"tribunal\": \"Tribunal de Justiça do Maranhão\",\n  \"varaComarca\": \"1ª Vara da Fazenda Pública\",\n  \"fase\": \"INSTRUCAO\",\n  \"dataDistribuicao\": \"2026-02-20\",\n  \"assunto\": \"Ação civil pública para preservar o bem cultural.\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Content-Type"
+        ]
+      }
+    },
+    {
+      "_id": "req_processos_get_all",
+      "_type": "request",
+      "parentId": "fld_processos_judiciais",
+      "name": "GET /api/processos-judiciais",
+      "method": "GET",
+      "url": "{{ base_url }}/api/processos-judiciais",
+      "body": {},
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Accept"
+        ]
+      }
+    },
+    {
+      "_id": "fld_salvaguardas",
+      "_type": "request_group",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "8. Salvaguardas",
+      "environment": {}
+    },
+    {
+      "_id": "req_salvaguardas_post",
+      "_type": "request",
+      "parentId": "fld_salvaguardas",
+      "name": "POST /api/salvaguardas",
+      "method": "POST",
+      "url": "{{ base_url }}/api/salvaguardas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"bemCulturalId\": \"{{ bem_id }}\",\n  \"planoAcao\": \"Plano de salvaguarda para a tradição cultural local.\",\n  \"status\": \"PLANEJADA\",\n  \"dataInicio\": \"2026-01-01\",\n  \"dataPrevisaoFim\": \"2028-12-31\",\n  \"responsavelId\": \"{{ usuario_id }}\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Content-Type"
+        ]
+      }
+    },
+    {
+      "_id": "req_salvaguardas_por_bem",
+      "_type": "request",
+      "parentId": "fld_salvaguardas",
+      "name": "GET /api/salvaguardas/bem/{bemId}",
+      "method": "GET",
+      "url": "{{ base_url }}/api/salvaguardas/bem/{{ bem_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Accept"
+        ]
+      }
+    },
+    {
+      "_id": "fld_auditorias",
+      "_type": "request_group",
+      "parentId": "wrk_sisTomPatrimonio",
+      "name": "9. Auditorias",
+      "environment": {}
+    },
+    {
+      "_id": "req_auditorias_por_entidade",
+      "_type": "request",
+      "parentId": "fld_auditorias",
+      "name": "GET /api/v1/auditorias/entidade/{entidade}/{entidadeId}",
+      "method": "GET",
+      "url": "{{ base_url }}/api/v1/auditorias/entidade/bem/{{ bem_id }}",
+      "body": {},
+      "headers": [
+        {
+          "name": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "headersPropertyOrder": {
+        "&": [
+          "Accept"
+        ]
+      }
+    }
+  ]
+}
