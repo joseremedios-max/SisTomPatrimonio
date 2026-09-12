@@ -1,0 +1,9 @@
+# Revisão padrão para mudanças no projeto.
+# Substitua o usuário abaixo pelos mantenedores reais do repositório.
+* @joseremedios-max
+
+# Alterações no pipeline e no fluxo de colaboração exigem revisão do mantenedor.
+/.github/ @joseremedios-max
+/pom.xml @joseremedios-max
+/mvnw @joseremedios-max
+/mvnw.cmd @joseremedios-max

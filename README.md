@@ -4,6 +4,10 @@ O **SisTomPatrimonio** é uma plataforma corporativa e estadual de geoprocessame
 
 ---
 
+## Colaboração
+
+Antes de contribuir, leia o [guia de contribuição](CONTRIBUTING.md). O projeto utiliza Pull Requests para alterações na branch `main`, validação automática pelo GitHub Actions e revisão definida em [.github/CODEOWNERS](.github/CODEOWNERS).
+
 
 ## 📋 Sumário
 1. [Visão Geral e Propósito do Sistema](#1-visão-geral-e-propósito-do-sistema)
