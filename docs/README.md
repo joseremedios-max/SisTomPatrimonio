@@ -46,19 +46,19 @@ docs/
 
 ## Cobertura da Camada de Serviços e Testes Automatizados
 
-O sistema conta com 100% dos seus serviços de negócio testados unitariamente através de testes automatizados com JUnit 5 e Mockito, cobrindo tanto o caminho feliz (funcionalidades) quanto o tratamento de restrições e exceções de negócio. O guia prático de execução e organização técnica está documentado em [src/test/README.md](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/README.md):
+O sistema conta com 100% dos seus serviços de negócio testados unitariamente através de testes automatizados com JUnit 5 e Mockito, cobrindo tanto o caminho feliz (funcionalidades) quanto o tratamento de restrições e exceções de negócio. O guia prático de execução e organização técnica está documentado em [src/test/README.md](../src/test/README.md):
 
 | Serviço de Negócio | Classe de Teste Unitário | Cenários Cobertos |
 | :--- | :--- | :--- |
-| `UsuarioService` | [UsuarioServiceTest](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/UsuarioServiceTest.java) | Restrições de e-mail único, campos vazios, autenticação BCrypt, DTO sem vazamento de hash |
-| `BemCulturalService` | [BemCulturalServiceTest](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/BemCulturalServiceTest.java) | Cadastro, publicação, arquivamento com eventos de auditoria desacoplados |
-| `SalvaguardaService` | [SalvaguardaServiceTest](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/SalvaguardaServiceTest.java) | Validação da Regra RN02 (exclusividade imaterial), obrigatoriedade de plano, listagem |
-| `VistoriaService` | [VistoriaServiceTest](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/VistoriaServiceTest.java) | Criação planejada, bloqueio de homologação prévia, homologação com status REALIZADA |
-| `ProtecaoService` | [ProtecaoServiceTest](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/ProtecaoServiceTest.java) | Abertura de processo, homologação de tombamento, transição do bem para TOMBADO |
-| `DocumentoService` | [DocumentoServiceTest](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/DocumentoServiceTest.java) | Gestão documental, integração com StorageService, cálculo de SHA-256 e download |
-| `EventoBemService` | [EventoBemServiceTest](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/EventoBemServiceTest.java) | Linha do tempo de intervenções, incidentes e restauros com integridade referencial |
-| `ProcessoJudicialService`| [ProcessoJudicialServiceTest](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/ProcessoJudicialServiceTest.java) | Cadastro judicial, unicidade do número CNJ do processo, listagem geral |
-| `AuditoriaService` | [AuditoriaServiceTest](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/AuditoriaServiceTest.java) | Consulta paginada por entidade, mapeamento DTO, suporte a ações de sistema |
+| `UsuarioService` | [UsuarioServiceTest](../src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/UsuarioServiceTest.java) | Restrições de e-mail único, campos vazios, autenticação BCrypt, DTO sem vazamento de hash |
+| `BemCulturalService` | [BemCulturalServiceTest](../src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/BemCulturalServiceTest.java) | Cadastro, publicação, arquivamento com eventos de auditoria desacoplados |
+| `SalvaguardaService` | [SalvaguardaServiceTest](../src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/SalvaguardaServiceTest.java) | Validação da Regra RN02 (exclusividade imaterial), obrigatoriedade de plano, listagem |
+| `VistoriaService` | [VistoriaServiceTest](../src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/VistoriaServiceTest.java) | Criação planejada, bloqueio de homologação prévia, homologação com status REALIZADA |
+| `ProtecaoService` | [ProtecaoServiceTest](../src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/ProtecaoServiceTest.java) | Abertura de processo, homologação de tombamento, transição do bem para TOMBADO |
+| `DocumentoService` | [DocumentoServiceTest](../src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/DocumentoServiceTest.java) | Gestão documental, integração com StorageService, cálculo de SHA-256 e download |
+| `EventoBemService` | [EventoBemServiceTest](../src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/EventoBemServiceTest.java) | Linha do tempo de intervenções, incidentes e restauros com integridade referencial |
+| `ProcessoJudicialService`| [ProcessoJudicialServiceTest](../src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/ProcessoJudicialServiceTest.java) | Cadastro judicial, unicidade do número CNJ do processo, listagem geral |
+| `AuditoriaService` | [AuditoriaServiceTest](../src/test/java/br/com/SisTomPatrimonio/SisTomPatrimonio/services/AuditoriaServiceTest.java) | Consulta paginada por entidade, mapeamento DTO, suporte a ações de sistema |
 
 ---
 

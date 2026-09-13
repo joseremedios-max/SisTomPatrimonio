@@ -37,7 +37,7 @@ O Sistema de Informacao do Patrimonio do Estado do Maranhao (**SIP-MA**) atua co
 
 ## 2. Diferenciais de Engenharia e Arquitetura
 
-Ao contrario de sistemas tradicionais de tombamento interno de ativos, o SIP-MA foi projetado para escala estadual macro, incorporando decisoes arquiteturais avancadas de software formalizadas na pasta [docs/04-adr/](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/docs/04-adr/):
+Ao contrario de sistemas tradicionais de tombamento interno de ativos, o SIP-MA foi projetado para escala estadual macro, incorporando decisoes arquiteturais avancadas de software formalizadas na pasta [docs/04-adr/](docs/04-adr/):
 
 * **Arquitetura em Camadas Desacopladas**: Backend estruturado estritamente em `Controllers` (REST/DTOs), `Services` (Regras de negocio e transacoes `@Transactional`), `Repositories` (Spring Data JPA / Hibernate Spatial) e `Entities` (JPA/PostGIS).
 * **Identificacao Unica por UUIDs**: Todas as chaves primarias e relacionamentos utilizam UUIDs de 128 bits (`java.util.UUID`), garantindo interoperabilidade entre sistemas governamentais sem colisoes de IDs.

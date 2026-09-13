@@ -9,9 +9,9 @@ Este documento descreve a arquitetura, organizacao, padroes de projeto e instruc
 A documentacao dos testes e mantida de forma rastreavel em multiplos pontos do repositorio:
 
 1. **Neste Arquivo (`src/test/README.md`)**: Guia tecnico imediato para desenvolvedores na raiz do codigo de teste.
-2. **[docs/README.md](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/docs/README.md)**: Secao *Cobertura da Camada de Servicos e Testes Automatizados*, contendo o sumario executivo de todas as suites.
-3. **[docs/02-requisitos/regras-de-negocio.md](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/docs/02-requisitos/regras-de-negocio.md)**: Secao *Matriz de Rastreabilidade*, que mapeia formalmente cada regra legal (RN01 a RN10) aos metodos de teste unitario correspondentes.
-4. **[docs/04-adr/0011-adocao-monolito-modular.md](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/docs/04-adr/0011-adocao-monolito-modular.md)**: Justificativa da testabilidade isolada no modelo de Monolito Modular com mocks puros.
+2. **[docs/README.md](../../docs/README.md)**: Secao *Cobertura da Camada de Servicos e Testes Automatizados*, contendo o sumario executivo de todas as suites.
+3. **[docs/02-requisitos/regras-de-negocio.md](../../docs/02-requisitos/regras-de-negocio.md)**: Secao *Matriz de Rastreabilidade*, que mapeia formalmente cada regra legal (RN01 a RN10) aos metodos de teste unitario correspondentes.
+4. **[docs/04-adr/0011-adocao-monolito-modular.md](../../docs/04-adr/0011-adocao-monolito-modular.md)**: Justificativa da testabilidade isolada no modelo de Monolito Modular com mocks puros.
 
 ---
 

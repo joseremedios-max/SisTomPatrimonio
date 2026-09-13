@@ -3,8 +3,9 @@
 * **Status**: Aceita
 * **Data**: 2026-09-12
 * **Autores**: Equipe de Arquitetura SisTomPatrimonio
-* **Decisores**: Comite de Desenvolvimento
-* **Referencias**: [docs/03-modelagem/arquitetura-e-padroes.md](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/docs/03-modelagem/arquitetura-e-padroes.md), [ADR 0007](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/docs/04-adr/0007-desacoplamento-auditoria.md)
+* **Referencias**:
+  * [Arquitetura e Padroes](../03-modelagem/arquitetura-e-padroes.md)
+  * [ADR 0007 — Desacoplamento da Trilha de Auditoria](0007-desacoplamento-auditoria.md)
 
 ---
 
