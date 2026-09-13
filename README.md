@@ -1,468 +1,318 @@
-# SIP-MA — Sistema de Informação do Patrimônio (Maranhão)
+# SIP-MA — Sistema de Informacao do Patrimonio (Maranhao)
 
-O **SisTomPatrimonio** é uma plataforma corporativa e estadual de geoprocessamento, salvaguarda e controle documental projetada para mapear, proteger e fiscalizar a herança cultural tangível (bens materiais edificados), intangível (patrimônio imaterial/folclore) e arqueológica do Estado do Maranhão.
-
----
-
-## Colaboração
-
-Antes de contribuir, leia o [guia de contribuição](CONTRIBUTING.md). O projeto utiliza Pull Requests para alterações na branch `main`, validação automática pelo GitHub Actions e revisão definida em [.github/CODEOWNERS](.github/CODEOWNERS).
-
-
-## Sumário
-1. [Visão Geral e Propósito do Sistema](#1-visão-geral-e-propósito-do-sistema)
-2. [Análise do Domínio e Desafios de Negócio](#2-análise-do-domínio-e-desafios-de-negócio)
-3. [Escolhas Arquiteturais e Padrões de Engenharia](#3-escolhas-arquiteturais-e-padrões-de-engenharia)
-4. [Estrutura Completa do Projeto Backend](#4-estrutura-completa-do-projeto-backend)
-5. [Modelo de Dados Físico, Espacial (PostGIS) e Híbrido (JSONB)](#5-modelo-de-dados-físico-espacial-postgis-e-híbrido-jsonb)
-6. [Catálogo Completo de APIs RESTful](#6-catálogo-completo-de-apis-restful)
-7. [Estratégia de Qualidade e Testes Automatizados](#7-estratégia-de-qualidade-e-testes-automatizados)
-8. [Análise Crítica: Falhas Críticas e Paridade Ambiental (H2 vs. Testcontainers)](#8-análise-crítica-falhas-críticas-e-paridade-ambiental-h2-vs-testcontainers)
-9. [Guia Passo a Passo de Execução para Iniciantes](#9--guia-passo-a-passo-de-execução-para-iniciantes)
-
-
-## 1. Diferenciais de Engenharia & Arquitetura
-
-Ao contrário de sistemas tradicionais de tombamento interno de ativos, o SIP-MA foi projetado para escala estadual macro, incorporando decisões arquiteturais avançadas de software:
-
-* **Arquitetura em Camadas Desacopladas**: Backend estruturado estritamente em `Controllers` (REST/DTOs), `Services` (Regras de negócio e transações `@Transactional`), `Repositories` (Spring Data JPA / Hibernate Spatial) e `Entities` (JPA/PostGIS).
-* **Identificação Única por UUIDs**: Todas as chaves primárias e relacionamentos utilizam UUIDs de 128 bits (`java.util.UUID`), garantindo interoperabilidade entre sistemas governamentais.
-* **Geoprocessamento com PostGIS**: Suporte nativo a geometrias espaciais JTS (`Point`, `Polygon`, `MultiPolygon`) sob o sistema de referência `EPSG:4326` (WGS 84).
-* **Isolamento de Segurança Arqueológica**: Separação física e relacional 1:1 das coordenadas exatas de sítios arqueológicos sensíveis para proteção contra saques e vandalismo.
-* **Modelagem Híbrida com JSONB**: Utilização do suporte `jsonb` do PostgreSQL no Hibernate 6 (`@JdbcTypeCode(SqlTypes.JSON)`) para catalogar equipes técnicas, patologias de conservação, metas de salvaguarda e trilhas de auditoria, evitando proliferação excessiva de tabelas associativas.
-* **Estratégia Zero Bytea (Mídias Digitais)**: Armazenamento externo de mídias e documentos em storage/S3, mantendo no banco de dados apenas a chave lógica (`storageKey`) e o hash **SHA256** de integridade.
-* **Segurança Stateless via JWT**: Autenticação baseada em Spring Security, codificação de senhas via BCrypt e suporte a flag declarativa de 2FA.
+O **SisTomPatrimonio** e uma plataforma corporativa e estadual de geoprocessamento, salvaguarda e controle documental projetada para mapear, proteger e fiscalizar a heranca cultural tangivel (bens materiais edificados), intangivel (patrimonio imaterial/folclore) e arqueologica do Estado do Maranhao.
 
 ---
 
+## Colaboracao
 
-## 1.0 Visão Geral e Propósito do Sistema
+Antes de contribuir, leia o [guia de contribuicao](CONTRIBUTING.md). O projeto utiliza Pull Requests para alteracoes na branch `main`, validacao automatica pelo GitHub Actions e revisao definida em [.github/CODEOWNERS](.github/CODEOWNERS).
 
-O Sistema de Informação do Patrimônio do Estado do Maranhão (**SIP-MA**) atua como a infraestrutura de dados espaciais e administrativos centralizada para a **SECMA** (Secretaria de Estado da Cultura do Maranhão), operando em sintonia com o **IPHAN**, Prefeituras Municipais e o **Ministério Público Estadual** .
+---
 
-### O Escopo Abrange as 3 Naturezas do Patrimônio Cultural :
-1. **Material Edificado:** Casarões históricos, igrejas, monumentos e conjuntos urbanos tombados de cidades como São Luís, Alcântara e Caxias .
-2. **Imaterial (Intangível):** Manifestações culturais, tradições, festas, saberes e celebrações (ex: Bumba Meu Boi, Tambor de Crioula, Rito do Divino Espírito Santo) .
-3. **Arqueológico:** Sítios arqueológicos pré-coloniais, sambaquis, inscrições rupestres e ruínas históricas .
+## Sumario
+1. [Visao Geral e Proposito do Sistema](#1-visao-geral-e-proposito-do-sistema)
+2. [Diferenciais de Engenharia e Arquitetura](#2-diferenciais-de-engenharia-e-arquitetura)
+3. [Analise do Dominio e Desafios de Negocio](#3-analise-do-dominio-e-desafios-de-negocio)
+4. [Escolhas Arquiteturais e Padroes de Engenharia](#4-escolhas-arquiteturais-e-padroes-de-engenharia)
+5. [Estrutura Completa do Projeto Backend](#5-estrutura-completa-do-projeto-backend)
+6. [Modelo de Dados Fisico, Espacial (PostGIS) e Hibrido (JSONB)](#6-modelo-de-dados-fisico-espacial-postgis-e-hibrido-jsonb)
+7. [Catalogo Completo de APIs RESTful](#7-catalogo-completo-de-apis-restful)
+8. [Estrategia de Qualidade e Testes Automatizados](#8-estrategia-de-qualidade-e-testes-automatizados)
+9. [Analise Critica: Falhas Criticas e Paridade Ambiental (H2 vs. Testcontainers)](#9-analise-critica-falhas-criticas-e-paridade-ambiental-h2-vs-testcontainers)
+10. [Guia Passo a Passo de Execucao](#10-guia-passo-a-passo-de-execucao)
 
+---
 
-## 2. Análise do Domínio e Desafios de Negócio
+## 1. Visao Geral e Proposito do Sistema
 
-A gestão de patrimônio cultural em escala estadual enfrenta gargalos operacionais que o SIP-MA foi projetado para resolver:
+O Sistema de Informacao do Patrimonio do Estado do Maranhao (**SIP-MA**) atua como a infraestrutura de dados espaciais e administrativos centralizada para a **SECMA** (Secretaria de Estado da Cultura do Maranhao), operando em sintonia com o **IPHAN**, Prefeituras Municipais e o **Ministerio Publico Estadual**.
 
-* **Dispersão de Dados:** Histórico de portarias, laudos periciais e vistorias descentralizados em arquivos físicos ou planilhas suscetíveis a perdas.
-* **Ausência de Georreferenciamento Cartográfico:** Falta de delimitação precisa de zonas de tombamento e áreas de amortecimento (entorno) .
-* **Vulnerabilidade de Sítios Arqueológicos:** A exposição pública indevida das coordenadas exatas de sítios arqueológicos resulta em saques, vandalismo e destruição irreversível do acervo.
-* **Heterogeneidade do Domínio:** Um imóvel histórico possui métricas físicas (área, pavimentos, estrutura) completamente incompatíveis com uma dança folclórica imaterial. Modelagens relacionais estritas geravam *table bloat* (tabelas com excesso de colunas nulas).
+### O Escopo Abrange as 3 Naturezas do Patrimonio Cultural:
+1. **Material Edificado:** Casaroes historicos, igrejas, monumentos e conjuntos urbanos tombados de cidades como Sao Luis, Alcantara e Caxias.
+2. **Imaterial (Intangivel):** Manifestacoes culturais, tradicoes, festas, saberes e celebracoes (ex: Bumba Meu Boi, Tambor de Crioula, Rito do Divino Espirito Santo).
+3. **Arqueologico:** Sitios arqueologicos pre-coloniais, sambaquis, inscricoes rupestres e ruinas historicas.
 
+---
 
-## 3. Escolhas Arquiteturais e Padrões de Engenharia
+## 2. Diferenciais de Engenharia e Arquitetura
 
-O backend do SIP-MA adota um padrão rigoroso de **Arquitetura em Camadas Desacopladas (Cliente-Servidor / REST)**:
+Ao contrario de sistemas tradicionais de tombamento interno de ativos, o SIP-MA foi projetado para escala estadual macro, incorporando decisoes arquiteturais avancadas de software formalizadas na pasta [docs/04-adr/](file:///home/josue/Área%20de%20trabalho/SisTomPatrimonio/docs/04-adr/):
 
-```text
-  [ Frontend React / Mobile App / Insomnia ]
-                    │
-                    │  (Requisições HTTP RESTful com JSON DTO) [120]
-                    ▼
- ┌─────────────────────────────────────────────────────────┐
- │ 1. CONTROLLERS (@RestController)                       │
- │    - Mapeamento de Rotas HTTP (/api/...)               │
- │    - Recebe/Retorna DTOs com ResponseEntity             │
- └──────────────────────────┬──────────────────────────────┘
-                            │
-                            ▼
- ┌─────────────────────────────────────────────────────────┐
- │ 2. SERVICES (@Service & @Transactional)                │
- │    - Regras de Negócio e Validações de Consistência   │
- │    - Lança RegraNegocioRunTime em caso de invalidez    │
- └──────────────────────────┬──────────────────────────────┘
-                            │
-                            ▼
- ┌─────────────────────────────────────────────────────────┐
- │ 3. REPOSITORIES (Spring Data JPA / Hibernate Spatial)   │
- │    - Abstração do Acesso a Dados (Interfaces DAO)      │
- │    - Consultas Derivadas e JPQL Espacial               │
- └──────────────────────────┬──────────────────────────────┘
-                            │
-                            ▼
- ┌─────────────────────────────────────────────────────────┐
- │ 4. DATABASE (PostgreSQL 14 + Extension PostGIS)         │
- │    - Geometrias Espaciais EPSG:4326 + Colunas JSONB     │
- └─────────────────────────────────────────────────────────┘
+* **Arquitetura em Camadas Desacopladas**: Backend estruturado estritamente em `Controllers` (REST/DTOs), `Services` (Regras de negocio e transacoes `@Transactional`), `Repositories` (Spring Data JPA / Hibernate Spatial) e `Entities` (JPA/PostGIS).
+* **Identificacao Unica por UUIDs**: Todas as chaves primarias e relacionamentos utilizam UUIDs de 128 bits (`java.util.UUID`), garantindo interoperabilidade entre sistemas governamentais sem colisoes de IDs.
+* **Geoprocessamento com PostGIS**: Suporte nativo a geometrias espaciais JTS (`Point`, `Polygon`, `MultiPolygon`) sob o sistema de referencia `EPSG:4326` (WGS 84).
+* **Isolamento de Seguranca Arqueologica**: Separacao fisica e relacional 1:1 das coordenadas exatas de sitios arqueologicos sensiveis para protecao contra saques e vandalismo.
+* **Modelagem Hibrida com JSONB**: Utilizacao do suporte `jsonb` do PostgreSQL no Hibernate 6 (`@JdbcTypeCode(SqlTypes.JSON)`) para catalogar equipes tecnicas, patologias de conservacao, metas de salvaguarda e trilhas de auditoria, evitando proliferacao excessiva de tabelas associativas.
+* **Estrategia Zero Bytea (Midias Digitais)**: Armazenamento externo de midias e documentos em storage/S3, mantendo no banco de dados apenas a chave logica (`storageKey`) e o hash **SHA-256** de integridade.
+* **Auditoria Desacoplada e Assincrona**: Trilha transacional disparada via eventos de dominio (`AuditoriaEvent`) consumidos assincronamente por `AuditoriaEventListener` com `@TransactionalEventListener(phase = AFTER_COMMIT)`.
+* **Strategy Pattern para Storage**: Interface abstrata `StorageService` com suporte a `LocalStorageService` (disco local) e `S3StorageService` (AWS S3/MinIO).
+* **Seguranca Stateless via JWT**: Autenticacao baseada em Spring Security, codificacao de senhas via BCrypt e suporte a flag declarativa de 2FA.
+* **Protecao de Invariantes no Dominio**: Entidades ricas com validacao de ciclo de vida e regras de negocio blindadas.
+
+---
+
+## 3. Analise do Dominio e Desafios de Negocio
+
+A gestao de patrimonio cultural em escala estadual enfrenta gargalos operacionais que o SIP-MA foi projetado para resolver:
+
+* **Dispersao de Dados:** Historico de portarias, laudos periciais e vistorias descentralizados em arquivos fisicos ou planilhas suscetiveis a perdas.
+* **Ausencia de Georreferenciamento Cartografico:** Falta de delimitacao precisa de zonas de tombamento e areas de amortecimento (entorno).
+* **Vulnerabilidade de Sitios Arqueologicos:** A exposicao publica indevida das coordenadas exatas de sitios arqueologicos resulta em saques, vandalismo e destruicao irreversivel do acervo.
+* **Heterogeneidade do Dominio:** Um imovel historico possui metricas fisicas (area, pavimentos, estrutura) completamente incompativeis com uma danca folclorica imaterial. Modelagens relacionais estritas geravam *table bloat* (tabelas com excesso de colunas nulas).
+
+---
+
+## 4. Escolhas Arquiteturais e Padroes de Engenharia
+
+O backend do SIP-MA adota um padrao rigoroso de **Arquitetura em Camadas Desacopladas (Cliente-Servidor / REST)**:
+
+```mermaid
+graph TD
+    Client["Cliente HTTP (Frontend / Mobile / Insomnia)"]
+    Client -->|Requisicoes REST com JSON DTO| Controllers["Controllers (@RestController)<br/>Rotas HTTP (/api/...) e ProblemDetail RFC 7807"]
+    Controllers --> Services["Services (@Service & @Transactional)<br/>Regras de Negocio e Protecao de Invariantes"]
+    Services --> Repositories["Repositories (Spring Data JPA / Hibernate Spatial)<br/>Acesso a Dados e Queries Espaciais"]
+    Services --> Storage["StorageService (Strategy Pattern)<br/>LocalStorageService / S3StorageService (SHA-256)"]
+    Services --> Listeners["AuditoriaEventListener (@TransactionalEventListener)<br/>Persistencia assincrona pos-commit"]
+    Repositories --> Database[("Database (PostgreSQL 14 + PostGIS)<br/>Geometrias EPSG:4326 e Colunas JSONB")]
+    Listeners --> Database
 ```
 
-### Principais Decisões Tecnológicas:
-* **Identificadores Globais Universais (UUID 128-bit):** Todas as entidades utilizam `java.util.UUID` como chave primária, assegurando interoperabilidade com outros sistemas governamentais sem colisões de IDs .
-* **Padrão DTO (Data Transfer Objects):** Nenhuma entidade JPA/Hibernate é exposta diretamente na API REST, protegendo o modelo de dados e evitando vazamento de atributos internos .
-* **Modelagem Híbrida Relacional + JSONB:** Uso das colunas `jsonb` do PostgreSQL no Hibernate 6 (`@JdbcTypeCode(SqlTypes.JSON)`) para gerenciar equipes técnicas, patologias em vistorias, metas de salvaguarda e auditoria sem criar tabelas filhas desnecessárias .
-* **Estratégia Zero Bytea (RNF05):** Mídias e documentos são mantidos em buckets externos/storage. O PostgreSQL armazena apenas a URL/chave lógica (`storageKey`) e o hash **SHA256** para checagem de integridade .
-* **Segurança Stateless e Controle de Acesso (RBAC):** Proteção via Spring Security com tokens JWT, senhas criptografadas com **BCrypt**, indicador de **2FA** e perfis de acesso (`ADMIN`, `TECNICO`, `CONSULTOR`, `LEITOR`, `JURIDICO`) .
-* **Tratamento Global de Exceções:** Exceções de negócio lançam a classe personalizada `RegraNegocioRunTime`, que é capturada e convertida automaticamente em respostas HTTP `400 Bad Request`.
+### Principais Decisoes Tecnologicas:
+* **Identificadores Globais Universais (UUID 128-bit):** Todas as entidades utilizam `java.util.UUID` como chave primaria, assegurando interoperabilidade com outros sistemas governamentais sem colisoes de IDs.
+* **Padrao DTO (Data Transfer Objects):** Nenhuma entidade JPA/Hibernate e exposta diretamente na API REST, protegendo o modelo de dados e evitando vazamento de atributos internos.
+* **Modelagem Hibrida Relacional + JSONB:** Uso das colunas `jsonb` do PostgreSQL no Hibernate 6 (`@JdbcTypeCode(SqlTypes.JSON)`) para gerenciar equipes tecnicas, patologias em vistorias, metas de salvaguarda e auditoria sem criar tabelas filhas desnecessarias.
+* **Estrategia Zero Bytea (RNF05):** Midias e documentos sao mantidos em buckets externos/storage. O PostgreSQL armazena apenas a URL/chave logica (`storageKey`) e o hash **SHA-256** para checagem de integridade.
+* **Seguranca Stateless e Controle de Acesso (RBAC):** Protecao via Spring Security com tokens JWT, senhas criptografadas com **BCrypt**, indicador de **2FA** e perfis de acesso (`ADMIN`, `TECNICO`, `CONSULTOR`, `LEITOR`, `JURIDICO`).
+* **Tratamento Global de Excecoes:** Excecoes de negocio lancam a classe personalizada `RegraNegocioRunTime`, que e capturada e convertida automaticamente em respostas HTTP `400 Bad Request` no formato RFC 7807 (`ProblemDetail`).
 
+---
 
-## 4. Estrutura do Projeto Backend
+## 5. Estrutura Completa do Projeto Backend
 
 ```text
-SisTomPatrimonio-api/
-├── docker-compose.yml                      # Container PostgreSQL 14 + PostGIS (Geoprocessamento)
-├── pom.xml                                 # Dependências Maven (Spring Boot 3, PostGIS, Flyway, H2)
-├── README.md                               # Documentação e guia do projeto
+SisTomPatrimonio/
+├── .github/
+│   ├── CODEOWNERS                              # Mantenedores responsaveis pela revisao
+│   ├── PULL_REQUEST_TEMPLATE.md                # Template de abertura de PR
+│   └── workflows/
+│       ├── ci.yml                              # Pipeline CI de build e testes (JDK 17 LTS)
+│       └── release.yml                         # Pipeline de release automatizado (JDK 17 LTS)
+├── docs/                                       # Suite completa de documentacao e ADRs
+├── insomnia-SisTomPatrimonio-collection.json   # Colecao de requisicoes para testes REST
+├── docker-compose.yaml                         # Container PostgreSQL 14 + PostGIS
+├── pom.xml                                     # Dependencias Maven (Spring Boot 3.4.1, Java 17 LTS)
+├── README.md                                   # Documentacao e guia do projeto
+├── CONTRIBUTING.md                             # Guia de contribuicao e padroes de branch/commit
+├── .env.example                                # Exemplo de variaveis de ambiente
 └── src/
     ├── main/
     │   ├── java/br/com/SisTomPatrimonio/SisTomPatrimonio/
-    │   │   ├── SisTomPatrimonioApplication.java       # Main Spring Boot
-    │   │   │
-    │   │   ├── config/                     # Configurações do Spring Security e Beans
-    │   │   │   └── SecurityConfig.java
-    │   │   │
-    │   │   ├── controllers/                # Camada REST (Endpoints HTTP)
-    │   │   │   ├── BemCulturalController.java
-    │   │   │   ├── DocumentoController.java
-    │   │   │   ├── EventoBemController.java
-    │   │   │   ├── ProcessoJudicialController.java
-    │   │   │   ├── ProtecaoController.java
-    │   │   │   ├── SalvaguardaController.java
-    │   │   │   ├── UsuarioController.java
-    │   │   │   └── VistoriaController.java
-    │   │   │
-    │   │   ├── dtos/                       # Data Transfer Objects (Payloads JSON)
-    │   │   │   ├── BemCulturalDTO.java
-    │   │   │   ├── DocumentoDTO.java
-    │   │   │   ├── EventoBemDTO.java
-    │   │   │   ├── ProcessoJudicialDTO.java
-    │   │   │   ├── ProtecaoDTO.java
-    │   │   │   ├── SalvaguardaDTO.java
-    │   │   │   ├── UsuarioDTO.java
-    │   │   │   └── VistoriaDTO.java
-    │   │   │
-    │   │   ├── exceptions/                 # Trutamento Global de Exceções
-    │   │   │   └── RegraNegocioRunTime.java
-    │   │   │
-    │   │   ├── models/                     # Camada de Domínio
-    │   │   │   ├── entities/               # Entidades JPA & PostGIS (15 Tabelas)
-    │   │   │   │   ├── Auditoria.java
-    │   │   │   │   ├── BemCultural.java
-    │   │   │   │   ├── Documento.java
-    │   │   │   │   ├── EventoBem.java
-    │   │   │   │   ├── LocalizacaoArqueologicaRestrita.java
-    │   │   │   │   ├── LocalizacaoBem.java
-    │   │   │   │   ├── MovimentacaoJudicial.java
-    │   │   │   │   ├── Municipio.java
-    │   │   │   │   ├── Organizacao.java
-    │   │   │   │   ├── ProcessoBem.java
-    │   │   │   │   ├── ProcessoBemId.java
-    │   │   │   │   ├── ProcessoJudicial.java
-    │   │   │   │   ├── Protecao.java
-    │   │   │   │   ├── Salvaguarda.java
-    │   │   │   │   ├── Usuario.java
-    │   │   │   │   └── Vistoria.java
-    │   │   │   │
-    │   │   │   └── enums/                  # Domínios e Restrições de Enumeração
-    │   │   │       ├── CategoriaDocumento.java
-    │   │   │       ├── ClassificacaoSeguranca.java
-    │   │   │       ├── EventoTipo.java
-    │   │   │       ├── FaseProcessoJudicial.java
-    │   │   │       ├── NaturezaBem.java
-    │   │   │       ├── PerfilUsuario.java
-    │   │   │       ├── StatusBemCultural.java
-    │   │   │       ├── StatusSalvaguarda.java
-    │   │   │       ├── StatusValidacaoDocumento.java
-    │   │   │       └── StatusVistoria.java
-    │   │   │
-    │   │   ├── repositories/               # Interfaces Spring Data JPA
-    │   │   │   ├── BemCulturalRepository.java
-    │   │   │   ├── DocumentoRepository.java
-    │   │   │   ├── EventoBemRepository.java
-    │   │   │   ├── MunicipioRepository.java
-    │   │   │   ├── OrganizacaoRepository.java
-    │   │   │   ├── ProcessoJudicialRepository.java
-    │   │   │   ├── ProtecaoRepository.java
-    │   │   │   ├── SalvaguardaRepository.java
-    │   │   │   ├── UsuarioRepository.java
-    │   │   │   └── VistoriaRepository.java
-    │   │   │
-    │   │   └── services/                   # Regras de Negócio e Transações
-    │   │       ├── BemCulturalService.java
-    │   │       ├── DocumentoService.java
-    │   │       ├── EventoBemService.java
-    │   │       ├── ProcessoJudicialService.java
-    │   │       ├── ProtecaoService.java
-    │   │       ├── SalvaguardaService.java
-    │   │       ├── UsuarioService.java
-    │   │       └── VistoriaService.java
-    │   │
+    │   │   ├── SisTomPatrimonioApplication.java
+    │   │   ├── config/                         # Seguranca e beans do Spring
+    │   │   ├── controllers/                    # Endpoints RESTful
+    │   │   ├── dtos/                           # Data Transfer Objects
+    │   │   ├── events/                         # Eventos de dominio (AuditoriaEvent)
+    │   │   ├── exceptions/                     # Tratamento global de excecoes (ProblemDetail RFC 7807)
+    │   │   ├── listeners/                      # Listeners assincronos (@TransactionalEventListener)
+    │   │   ├── models/
+    │   │   │   ├── entities/                   # Entidades JPA e geometrias PostGIS (15 tabelas)
+    │   │   │   └── enums/                      # Enums de dominio
+    │   │   ├── repositories/                   # Interfaces Spring Data JPA / PostGIS
+    │   │   ├── services/                       # 9 servicos com regras de negocio e invariantes
+    │   │   └── storage/                        # Strategy Pattern (LocalStorageService / S3StorageService)
     │   └── resources/
-    │       ├── application.yml             # Propriedades da aplicação
+    │       ├── application.yml                 # Configuracao principal da aplicacao
     │       └── db/migration/
-    │           └── V1__criar_schema_SisTomPatrimonio.sql # Migration DDL do PostGIS
-    │
+    │           └── V1__criar_schema_sipma.sql  # Migrations Flyway do schema PostGIS
     └── test/
-    └── java/
-        └── br/com/SisTomPatrimonio/SisTomPatrimonio/
-            │
-            ├── controllers/
-            │   ├── BemCulturalControllerTest.java
-            │   ├── DocumentoControllerTest.java         (✨ NOVO)
-            │   ├── EventoBemControllerTest.java
-            │   ├── ProcessoJudicialControllerTest.java
-            │   ├── ProtecaoControllerTest.java          (✨ NOVO)
-            │   ├── SalvaguardaControllerTest.java
-            │   ├── UsuarioControllerTest.java
-            │   └── VistoriaControllerTest.java          (✨ NOVO)
-            │
-            ├── repositories/
-            │   ├── AuditoriaRepositoryTest.java
-            │   ├── BemCulturalRepositoryTest.java       (✨ NOVO)
-            │   ├── DocumentoRepositoryTest.java
-            │   ├── EventoBemRepositoryTest.java         (✨ NOVO)
-            │   ├── MunicipioRepositoryTest.java         (✨ NOVO)
-            │   ├── OrganizacaoRepositoryTest.java       (✨ NOVO)
-            │   ├── ProcessoJudicialRepositoryTest.java  (✨ NOVO)
-            │   ├── ProtecaoRepositoryTest.java
-            │   ├── SalvaguardaRepositoryTest.java       (✨ NOVO)
-            │   ├── UsuarioRepositoryTest.java
-            │   └── VistoriaRepositoryTest.java
-            │
-            ├── services/
-            │   ├── BemCulturalServiceTest.java
-            │   ├── DocumentoServiceTest.java            (✨ NOVO)
-            │   ├── EventoBemServiceTest.java            (✨ NOVO)
-            │   ├── ProcessoJudicialServiceTest.java     (✨ NOVO)
-            │   ├── ProtecaoServiceTest.java             (✨ NOVO)
-            │   ├── SalvaguardaServiceTest.java          (✨ NOVO)
-            │   ├── UsuarioServiceTest.java
-            │   └── VistoriaServiceTest.java             (✨ NOVO)
-            │
-            ├── AbstractIntegrationTest.java
-            └── SisTomPatrimonioApplicationTests.java
+        ├── java/br/com/SisTomPatrimonio/SisTomPatrimonio/
+        │   ├── controllers/                    # Testes de integracao web (MockMvc)
+        │   ├── listeners/                      # Testes de listener de eventos
+        │   ├── models/entities/                # Testes unitarios de invariantes de dominio
+        │   ├── repositories/                   # Testes de persistencia com H2 espacial
+        │   ├── services/                       # 9 suites de testes unitarios de servicos
+        │   ├── storage/                        # Testes do servico de armazenamento e SHA-256
+        │   ├── AbstractIntegrationTest.java
+        │   └── SisTomPatrimonioApplicationTests.java
+        └── resources/
+            └── application-test.properties     # Perfil isolado de teste em memoria H2
 ```
 
 ---
 
-## Modelo de Dados (15 Entidades Relacionais & Espaciais)
+## 6. Modelo de Dados Fisico, Espacial (PostGIS) e Hibrido (JSONB)
 
-| Entidade | Descrição / Função Arquitetural |
-| :--- | :--- |
-| **`usuario`** | Servidores e peritos da SECMA com RBAC (`ADMIN`, `TECNICO`, `CONSULTOR`, `LEITOR`, `JURIDICO`) e flag 2FA. |
-| **`organizacao`** | Instituições governamentais e de salvaguarda (SECMA, IPHAN, Prefeituras). |
-| **`municipio`** | Base cartográfica espacial municipal do Maranhão com geometria `MultiPolygon` PostGIS (EPSG:4326). |
-| **`bem_cultural`** | Entidade central do patrimônio (Materiais, Imateriais e Arqueológicos) contendo `dados_especificos` em JSONB. |
-| **`localizacao_bem`** | Coordenadas públicas e endereço de referência postal de imóveis e áreas protegidas. |
-| **`localizacao_arqueologica_restrita`** | Isolamento de segurança 1:1 de coordenadas exatas de sítios arqueológicos sensíveis. |
-| **`protecao`** | Processos legais de tombamento, livros de tombo, instâncias e atos normativos estaduais. |
-| **`vistoria`** | Vistorias preventivas com catálogos de patologias e equipes técnicas em colunas **JSONB**. |
-| **`processo_judicial`** | Ações judiciais de embargo e preservação contendo o número único CNJ e valor da causa. |
-| **`processo_bem`** | Tabela associativa N:N com chave composta (`ProcessoBemId`) vinculando ações aos bens com papel do bem. |
-| **`movimentacao_judicial`** | Histórico sequencial de andamentos dos processos judiciais. |
-| **`documento`** | Repositório polimórfico de mídias, fotos e portarias com cálculo de hash criptográfico **SHA256**. |
-| **`evento_bem`** | Linha do tempo histórica de restauros, reformas e marcos temporais do bem. |
-| **`salvaguarda`** | Planos de ação e apoio ao patrimônio imaterial contendo metas/orçamentos estruturados em **JSONB**. |
-| **`auditoria`** | Trilha transacional imutável gravando snapshots `dados_anteriores` e `dados_novos` em **JSONB**. |
+O banco de dados relacional e geoespacial do SIP-MA e composto por **15 tabelas interdependentes**:
 
-
-
----
-
-## 5. Modelo de Dados Físico, Espacial (PostGIS) e Híbrido (JSONB)
-
-O banco de dados relacional e geoespacial do SIP-MA é composto por **15 tabelas interdependentes**:
-
-| Tabela / Entidade | Função no Sistema | Tipo de Dados / Destaque Arquitetural |
+| Tabela / Entidade | Funcao no Sistema | Tipo de Dados / Destaque Arquitetural |
 | :--- | :--- | :--- |
-| **`usuario`** | Servidores, peritos e advogados da SECMA | UUID [PK], `perfil` ENUM, flag `dois_fatores` . |
-| **`organizacao`** | Instituições governamentais e de salvaguarda (SECMA, IPHAN) | UUID [PK], CNPJ único. |
-| **`municipio`** | Base cartográfica espacial dos municípios do Maranhão | UUID [PK], Geometria `MultiPolygon` PostGIS (EPSG:4326) . |
-| **`bem_cultural`** | Centralizador unificado de ativos materiais, imateriais e arqueológicos | UUID [PK], `natureza` ENUM, atributo dinâmico `dados_especificos` JSONB . |
-| **`localizacao_bem`** | Coordenadas públicas e endereço postal de monumentos | UUID [PK], Geometria `Point` ou `Polygon` PostGIS (EPSG:4326) . |
-| **`localizacao_arqueologica_restrita`** | Isolamento de segurança 1:1 de coordenadas exatas de sítios arqueológicos | UUID [PK], Geometria `geom_exata` Point e `buffer_protecao` Polygon . |
-| **`protecao`** | Processo legal de tombamento, decreto e livro de tombo | UUID [PK], `fase` ENUM, controle de vigência . |
-| **`vistoria`** | Inspeções preventivas de conservação e patologias | UUID [PK], colunas dinâmicas `equipe` JSONB e `patologias` JSONB . |
-| **`processo_judicial`** | Ações judiciais de embargo, dano e preservação | UUID [PK], número padronizado CNJ único [74, 75]. |
-| **`processo_bem`** | Tabela associativa N:N entre ações judiciais e bens | Chave composta `ProcessoBemId` (`processo_id`, `bem_id`). |
-| **`movimentacao_judicial`** | Histórico sequencial de andamentos dos processos judiciais | UUID [PK], ordem sequencial de andamentos . |
-| **`documento`** | Repositório polimórfico de plantas, portarias e laudos | UUID [PK], armazena `storageKey` (Zero Bytea) e hash `sha256`. |
-| **`evento_bem`** | Linha do tempo histórica de restauros e intervenções | UUID [PK], `tipo` ENUM, anos e datas de início/fim. |
-| **`salvaguarda`** | Planos de ação e apoio ao patrimônio imaterial | UUID [PK], plano detalhado na coluna `acoes` JSONB  |
-| **`auditoria`** | Trilha transacional imutável de alteração de dados | BIGINT [PK], grava instantâneos `dados_anteriores` e `dados_novos` em JSONB  |
-
-
+| **`usuario`** | Servidores, peritos e advogados da SECMA | UUID [PK], `perfil` ENUM, flag `dois_fatores`. |
+| **`organizacao`** | Instituicoes governamentais e de salvaguarda (SECMA, IPHAN) | UUID [PK], CNPJ unico. |
+| **`municipio`** | Base cartografica espacial dos municipios do Maranhao | UUID [PK], Geometria `MultiPolygon` PostGIS (EPSG:4326). |
+| **`bem_cultural`** | Centralizador unificado de ativos materiais, imateriais e arqueologicos | UUID [PK], `natureza` ENUM, atributo dinamico `dados_especificos` JSONB. |
+| **`localizacao_bem`** | Coordenadas publicas e endereco postal de monumentos | UUID [PK], Geometria `Point` ou `Polygon` PostGIS (EPSG:4326). |
+| **`localizacao_arqueologica_restrita`** | Isolamento de seguranca 1:1 de coordenadas exatas de sitios arqueologicos | UUID [PK], Geometria `geom_exata` Point e `buffer_protecao` Polygon. |
+| **`protecao`** | Processo legal de tombamento, decreto e livro de tombo | UUID [PK], `fase` ENUM, controle de vigencia. |
+| **`vistoria`** | Inspecoes preventivas de conservacao e patologias | UUID [PK], colunas dinamicas `equipe` JSONB e `patologias` JSONB. |
+| **`processo_judicial`** | Acoes judiciais de embargo, dano e preservacao | UUID [PK], numero padronizado CNJ unico. |
+| **`processo_bem`** | Tabela associativa N:N entre acoes judiciais e bens | Chave composta `ProcessoBemId` (`processo_id`, `bem_id`). |
+| **`movimentacao_judicial`** | Historico sequencial de andamentos dos processos judiciais | UUID [PK], ordem sequencial de andamentos. |
+| **`documento`** | Repositorio polimorfico de plantas, portarias e laudos | UUID [PK], armazena `storageKey` (Zero Bytea) e hash `sha256`. |
+| **`evento_bem`** | Linha do tempo historica de restauros e intervencoes | UUID [PK], `tipo` ENUM, anos e datas de inicio/fim. |
+| **`salvaguarda`** | Planos de acao e apoio ao patrimonio imaterial | UUID [PK], plano detalhado na coluna `acoes` JSONB. |
+| **`auditoria`** | Trilha transacional imutavel de alteracao de dados | BIGINT [PK], grava instantaneos `dados_anteriores` e `dados_novos` em JSONB. |
 
 ---
 
-## Principais Endpoints da API REST
+## 7. Catalogo Completo de APIs RESTful
 
-* **`POST /api/usuarios`** — Cadastro de usuários e peritos.
-* **`POST /api/bens`** — Cadastro de novos bens culturais materiais, imateriais ou arqueológicos.
-* **`GET /api/bens/filtrar?natureza=...`** — Consulta de bens filtrados por natureza e status.
-* **`POST /api/vistorias`** — Agendamento de vistorias técnicas.
-* **`POST /api/vistorias/{id}/patologias`** — Inclusão de anomalias físicas no vetor JSONB da vistoria.
-* **`PUT /api/vistorias/{id}/homologar`** — Homologação pericial de vistorias realizadas.
-* **`POST /api/protecoes`** — Registro de processos de tombamento legal.
-* **`PUT /api/protecoes/{id}/revogar`** — Revogação de vigência do ato normativo.
-* **`POST /api/processos-judiciais`** — Cadastro de ações judiciais de preservação.
-* **`POST /api/processos-judiciais/{id}/vincular-bem`** — Associação N:N entre ação judicial e bem cultural.
-* **`POST /api/documentos`** — Registro polimórfico de documentos e fotos com validação de hash SHA256.
-* **`GET /api/eventos-bem/bem/{bemId}/linha-tempo`** — Consulta da cronologia histórica de intervenções de um monumento.
-* **`POST /api/salvaguardas/{id}/acoes`** — Inclusão de metas no plano de salvaguarda imaterial via JSONB.
+Todas as rotas estao implementadas e disponiveis para execucao direta na colecao do Insomnia:
+
+### Modulo Usuarios e Seguranca (`/api/usuarios`)
+* `POST /api/usuarios`: Cadastra novos usuarios/peritos com senha criptografada via BCrypt. Retorna `UsuarioResponseDTO` sem vazamento de senha.
+* `POST /api/usuarios/autenticar`: Efetua autenticacao e emite os dados do usuario logado.
+
+### Modulo Core Patrimonial (`/api/v1/bens-culturais`)
+* `POST /api/v1/bens-culturais`: Registra novo bem cultural (Material, Imaterial ou Arqueologico). Exige header `X-Usuario-Id`.
+* `GET /api/v1/bens-culturais/proximidade?latitude={lat}&longitude={lng}&raioMetros={raio}`: Busca bens por proximidade geografica via consulta espacial PostGIS com paginacao.
+* `PATCH /api/v1/bens-culturais/{id}/publicar`: Homologa o ciclo de vida do bem para publicacao no acervo. Exige header `X-Usuario-Id`.
+* `PATCH /api/v1/bens-culturais/{id}/arquivar`: Transicao de ciclo de vida para arquivamento institucional. Exige header `X-Usuario-Id`.
+
+### Modulo Vistorias e Fiscalizacao (`/api/v1/vistorias`)
+* `POST /api/v1/vistorias`: Agenda nova vistoria tecnica preventiva com catalogacao de equipe e patologias em JSONB.
+* `GET /api/v1/vistorias/bem/{bemId}`: Lista o historico completo de vistorias vinculadas a um bem cultural.
+* `POST /api/v1/vistorias/{id}/homologar`: Homologacao pericial de vistoria realizada. Exige header `X-Usuario-Id`.
+
+### Modulo Tombamento Legal e Protecao (`/api/v1/protecoes`)
+* `POST /api/v1/protecoes`: Emite o registro de processo de tombamento (instrucao ou homologacao formal em Livro do Tombo com decreto).
+* `GET /api/v1/protecoes/bem/{bemId}`: Lista os processos de protecao e tombamento associados a um bem cultural.
+
+### Modulo Documentos e Midias (`/api/v1/documentos`)
+* `POST /api/v1/documentos`: Cadastra metadados de plantas, fotos e laudos validando hash criptografico SHA-256 e chave no storage externo.
+* `GET /api/v1/documentos/bem/{bemId}`: Lista todos os documentos associados a um bem cultural.
+
+### Modulo Eventos e Linha do Tempo (`/api/eventos`)
+* `POST /api/eventos`: Registra novo evento ou intervencao na linha do tempo historica do bem (`RESTAURO`, `INTERVENCAO`, etc.).
+* `GET /api/eventos/bem/{bemId}`: Consulta a cronologia historica de intervencoes de um bem cultural.
+
+### Modulo Processos Judiciais (`/api/processos-judiciais`)
+* `POST /api/processos-judiciais`: Cadastra acao judicial de preservacao por numero unico CNJ.
+* `GET /api/processos-judiciais`: Lista todos os processos judiciais cadastrados na base.
+
+### Modulo Salvaguarda Imaterial (`/api/salvaguardas`)
+* `POST /api/salvaguardas`: Cadastra plano de salvaguarda para bens imateriais (aplica a regra RN02, bloqueando bens materiais).
+* `GET /api/salvaguardas/bem/{bemId}`: Lista os planos de salvaguarda vinculados a um bem imaterial.
+
+### Modulo Auditoria Transacional (`/api/v1/auditorias`)
+* `GET /api/v1/auditorias/entidade/{entidade}/{entidadeId}`: Consulta paginada da trilha de auditoria e snapshots JSONB de modificacoes de uma entidade.
 
 ---
 
-## 6. Catálogo Completo de APIs RESTful
+## 8. Estrategia de Qualidade e Testes Automatizados
 
-### 👤 Módulo Usuários & Segurança (`/api/usuarios`)
-* `POST /api/usuarios`: Cadastra novos servidores/peritos com senha encriptada via BCrypt.
-* `POST /api/usuarios/autenticar`: Efetua login e emite o token JWT (verificando flag 2FA).
-
-### 🏛️ Módulo Core Patrimonial (`/api/bens`)
-* `POST /api/bens`: Registra novos bens culturais (Materiais, Imateriais e Arqueológicos).
-* `GET /api/bens/filtrar?natureza={NATUREZA}`: Busca bens por filtro de natureza e classificação de segurança.
-
-### 🔍 Módulo Vistorias & Fiscalização (`/api/vistorias`)
-* `POST /api/vistorias`: Agenda uma nova vistoria técnica preventiva.
-* `POST /api/vistorias/{id}/patologias`: Adiciona laudos de patologias físicas ao vetor JSONB da vistoria.
-* `PUT /api/vistorias/{id}/homologar`: Homologa pericialmente a vistoria realizada.
-
-### 📜 Módulo Tombamento Legal (`/api/protecoes`)
-* `POST /api/protecoes`: Emite o decreto e cria o processo de tombamento.
-* `PUT /api/protecoes/{id}/revogar`: Revoga a vigência de um ato normativo.
-
-### ⚖️ Módulo Processos Judiciais N:N (`/api/processos-judiciais`)
-* `POST /api/processos-judiciais`: Cadastra ação judicial de embargo por número CNJ.
-* `POST /api/processos-judiciais/{id}/vincular-bem`: Associa N:N um processo a um bem cultural via `ProcessoBem`.
-* `DELETE /api/processos-judiciais/{id}/desvincular-bem/{bemId}`: Remove o vínculo entre o processo e o bem.
-
-### 📂 Módulo Documentos & Mídias (`/api/documentos`)
-* `POST /api/documentos`: Cadastra metadados de plantas/laudos validando tamanho e hash SHA256.
-
-### ⏳ Módulo Linha do Tempo & Salvaguarda Imaterial
-* `GET /api/eventos-bem/bem/{bemId}/linha-tempo`: Consulta a cronologia histórica de restauros do bem.
-* `POST /api/salvaguardas/{id}/acoes`: Inclui novas metas e orçamentos ao plano de salvaguarda via JSONB.
-
-
-
-## 7. Estratégia de Qualidade e Testes Automatizados
-
-O SIP-MA adota uma abordagem de testes sistemática e repetível estruturada no padrão **Cenário -> Ação -> Verificação** :
+O SIP-MA adota uma abordagem de testes rigorosa e repetivel estruturada no padrao **Cenario -> Acao -> Verificacao**:
 
 1. **Testes de Unidade nos Services (JUnit 5 + Mockito):**
-   * Avaliam isoladamente as regras de negócio em métodos das classes `@Service` [4].
-   * Utilizam `@Mock` e `@InjectMocks` para isolar chamadas de banco e validar se restrições violadas lançam a exceção `RegraNegocioRunTime`.
+   * Avaliam isoladamente as regras de negocio em metodos das classes `@Service`.
+   * Utilizam `@Mock` e `@InjectMocks` para isolar chamadas de banco e validar se restricoes violadas lancam a excecao `RegraNegocioRunTime`.
 2. **Testes de Controllers REST (MockMvc + `@WebMvcTest`):**
-   * Validam mapeamentos de rotas, serialização JSON e códigos de status HTTP (`201 Created`, `200 OK`, `400 Bad Request`) .
-   * Utilizam o utilitário `MockMvc` com `@MockBean` para simular requisições web sem subir o servidor Tomcat .
-3. **Testes de Persistência e Repositórios (H2 em Memória):**
-   * Utilizam `@SpringBootTest` com `@ActiveProfiles("test")` para testar mapeamentos JPA, constraints e consultas em JPQL contra um banco em memória isolado (`jdbc:h2:mem:sipma_test`).
+   * Validam mapeamentos de rotas, serializacao JSON e codigos de status HTTP (`201 Created`, `200 OK`, `400 Bad Request`).
+   * Utilizam o utilitario `MockMvc` com `@MockBean` para simular requisicoes web sem subir o servidor Tomcat.
+3. **Testes de Persistencia e Repositorios (H2 em Memoria):**
+   * Utilizam `@SpringBootTest` com `@ActiveProfiles("test")` para testar mapeamentos JPA, constraints e consultas em JPQL contra um banco em memoria isolado (`jdbc:h2:mem:sipma_test`).
+4. **Homologacao Atual**:
+   * **79 testes automatizados com 100% de sucesso (0 falhas, 0 erros)** cobrindo todos os 9 servicos de negocio, listeners de auditoria, storage e invariantes de entidades.
 
 ---
 
+## 9. Analise Critica: Falhas Criticas e Paridade Ambiental (H2 vs. Testcontainers)
 
-## 8. Análise Crítica: Falhas Críticas e Paridade Ambiental (H2 vs. Testcontainers)
-
-### 📌 Análise de Falhas Críticas de Domínio (O Inaceitável)
-1. **Vazamento de Coordenadas Arqueológicas (`localizacao_arqueologica_restrita`):** A exposição das coordenadas exatas (`geom_exata`) de sítios sensíveis para perfis sem credencial (`LEITOR`) resulta em vandalismo e saques físicos.
-   * *Mitigação:* DTOs de resposta geral nunca contêm o nó espacial restrito, e o `BemCulturalService` exige validação de perfil `ADMIN`/`TECNICO` e registro de fundamentação em auditoria.
-2. **Quebra da Trilha de Auditoria Legal:** A ausência de logs em operações em lote compromete a validade jurídica de processos de tombamento.
-   * *Mitigação:* Listeners JPA e eventos síncronos gravam snapshots `dados_anteriores` e `dados_novos` em colunas `jsonb` dentro da transação principal.
-3. **Violação do RNF05 (Zero Bytea):** Armazenar binários no PostgreSQL causa *table bloat* e lentidão do banco.
-   * *Mitigação:* Armazenamento estrito de referências lógicas (`storageKey`) e verificação via hash **SHA256**.
-
----
-
-### ⚖️ Discussão Técnica: H2 vs. Testcontainers em CI/CD e Escopo Acadêmico
-
-A decisão de substituir totalmente o **H2** pelo **Testcontainers** (`postgis/postgis:14-3.3-alpine`) deve ser analisada sob dois prismas distintos: **o ambiente real de produção/CI-CD governamental** versus **o projeto acadêmico de entrega e avaliação da disciplina**.
-
-#### Prisma 1: Escopo Acadêmico e Avaliação Disciplinar (Abordagem Atual com H2)
-* **Sem Dependência do Daemon do Docker:** Permitir que o professor ou avaliador rode `mvn test` em qualquer ambiente operacional imediatamente, sem a exigência de ter o Docker Desktop instalado ou rodando em background.
-* **Velocidade de Execução:** O H2 sobe o contexto de teste em memória em poucos segundos, facilitando a execução rápida durante o desenvolvimento das aulas.
-* **Alinhamento Pedagógico:** Atende com precisão às diretrizes da disciplina, utilizando o perfil de testes (`application-test.properties`) com suporte a dialeto espacial H2.
-
-#### Prisma 2: Produção Real e Pipeline CI/CD Governamental (Uso do Testcontainers)
-* **Divergência entre Motores Espaciais:** O H2 com `H2SpatialDialect` emula cálculos geodésicos em Java através da biblioteca JTS. Já o **PostGIS** em produção executa rotinas espaciais nativas em C/C++ (GEOS, GDAL, PROJ).
-* **Prevenção de Falsos Positivos:** Operações espaciais complexas em SRID `EPSG:4326` (como `ST_Contains` em polígonos de amortecimento ou `ST_Intersects`) podem passar "verde" no H2, mas apresentar diferenças de precisão flutuante ou incompatibilidades de funções SQL no PostGIS real.
-* **100% de Paridade Ambiental (12-Factor App):** Adoção da biblioteca Testcontainers em esteiras de integração contínua (GitHub Actions / GitLab CI) para levantar temporariamente a imagem exata `postgis/postgis:14-3.3-alpine`, executando as migrations reais do Flyway e garantindo paridade ambiental perfeita antes do deploy.
+### Analise de Falhas Criticas de Dominio
+1. **Vazamento de Coordenadas Arqueologicas (`localizacao_arqueologica_restrita`):** A exposicao das coordenadas exatas (`geom_exata`) de sitios sensiveis para perfis sem credencial (`LEITOR`) resulta em vandalismo e saques fisicos.
+   * *Mitigacao:* DTOs de resposta geral nunca contem o no espacial restrito, e o `BemCulturalService` exige validacao de perfil `ADMIN`/`TECNICO` e registro de fundamentacao em auditoria.
+2. **Quebra da Trilha de Auditoria Legal:** A ausencia de logs em operacoes em lote compromete a validade juridica de processos de tombamento.
+   * *Mitigacao:* Listeners JPA e eventos sincronos/assincronos gravam snapshots `dados_anteriores` e `dados_novos` em colunas `jsonb` de forma transacional.
+3. **Violacao do RNF05 (Zero Bytea):** Armazenar binarios no PostgreSQL causa *table bloat* e lentidao do banco.
+   * *Mitigacao:* Armazenamento estrito de referencias logicas (`storageKey`) e verificacao via hash **SHA-256**.
 
 ---
 
+### Discussao Tecnica: H2 vs. Testcontainers em CI/CD e Escopo Academico
 
-## 9. 🚀 Guia Passo a Passo de Execução
+A decisao de substituir totalmente o **H2** pelo **Testcontainers** (`postgis/postgis:14-3.3-alpine`) deve ser analisada sob dois prismas distintos: **o ambiente real de producao/CI-CD governamental** versus **o projeto academico de entrega e avaliacao da disciplina**.
 
-Este guia foi elaborado para que qualquer pessoa consiga configurar, rodar, executar a suíte de testes e testar os endpoints REST do SIP-MA do zero.
+#### Prisma 1: Escopo Academico e Avaliacao Disciplinar (Abordagem Atual com H2)
+* **Sem Dependencia do Daemon do Docker:** Permite executar `./mvnw test` em qualquer ambiente operacional imediatamente, sem a exigencia de ter o Docker rodando em background.
+* **Velocidade de Execucao:** O H2 sobe o contexto de teste em memoria em poucos segundos (~9 a 14 segundos), facilitando a execucao rapida durante o desenvolvimento.
+* **Alinhamento Pedagogico:** Atende com precisao as diretrizes da disciplina, utilizando o perfil de testes (`application-test.properties`) com suporte a dialeto espacial H2.
 
----
-
-### 📦 Passo 1: Pré-requisitos
-Garanta que as seguintes ferramentas estejam instaladas em sua máquina:
-1. **JDK 17 ou superior** (Java Development Kit).
-2. **Apache Maven 3.8+** (Gerenciador de dependências).
-3. **Docker Desktop** (para subir o banco PostgreSQL + PostGIS).
-4. **Git** (para clonagem do repositório).
-5. **Insomnia REST Client** ou **Postman** (para testar os endpoints da API).
-6. **IDE de sua preferência** (IntelliJ IDEA ou VS Code).
+#### Prisma 2: Producao Real e Pipeline CI/CD Governamental (Uso do Testcontainers)
+* **Divergencia entre Motores Espaciais:** O H2 com `H2SpatialDialect` emula calculos geodesicos em Java atraves da biblioteca JTS. Ja o **PostGIS** em producao executa rotinas espaciais nativas em C/C++ (GEOS, GDAL, PROJ).
+* **Prevencao de Falsos Positivos:** Operacoes espaciais complexas em SRID `EPSG:4326` (como `ST_Contains` em poligonos de amortecimento ou `ST_Intersects`) podem passar "verde" no H2, mas apresentar diferencas de precisao flutuante ou incompatibilidades de funcoes SQL no PostGIS real.
+* **100% de Paridade Ambiental (12-Factor App):** Adocao da biblioteca Testcontainers em esteiras de integracao continua para levantar temporariamente a imagem exata `postgis/postgis:14-3.3-alpine`, executando as migrations reais do Flyway e garantindo paridade ambiental perfeita antes do deploy.
 
 ---
 
-### 📥 Passo 2: Clonar e Abrir o Projeto
-Abra o terminal de comandos e execute:
+## 10. Guia Passo a Passo de Execucao
+
+Este guia descreve como configurar, rodar, executar a suite de testes e testar os endpoints REST do SIP-MA:
+
+---
+
+### Passo 1: Pre-requisitos
+Garanta que as seguintes ferramentas estejam instaladas:
+1. **JDK 17 LTS** (Java Development Kit).
+2. **Apache Maven 3.8+** (ou utilizar o Maven Wrapper incluso `./mvnw`).
+3. **Docker** (para subir o banco PostgreSQL + PostGIS via Docker Compose).
+4. **Git** (para controle de versao).
+5. **Insomnia REST Client** (para testar os endpoints da API).
+
+---
+
+### Passo 2: Clonar e Abrir o Projeto
 ```bash
-# 1. Clonar o repositório do projeto
-git clone https://github.com/seu-usuario/SisTomPatrimonio-api.git
+# 1. Clonar o repositorio
+git clone https://github.com/joseremedios-max/SisTomPatrimonio.git
 
 # 2. Entrar na pasta raiz do projeto
-cd sipma-api
+cd SisTomPatrimonio
 
-# 3. Abrir o projeto na sua IDE (exemplo no VS Code ou IntelliJ)
+# 3. Abrir o projeto na IDE (exemplo VS Code)
 code .
 ```
 
 ---
 
-### 🐳 Passo 3: Subir o Banco de Dados PostGIS via Docker
-Com o Docker Desktop em execução, abra o terminal na raiz do projeto onde está o arquivo `docker-compose.yml` e digite:
+### Passo 3: Subir o Banco de Dados PostGIS via Docker
+Com o Docker em execucao, abra o terminal na raiz do projeto onde esta o arquivo `docker-compose.yaml` e execute:
 ```bash
-docker-compose up -d
+docker compose up -d postgres-spatial
 ```
-*O Docker baixará a imagem `postgis/postgis:14-3.3-alpine` e inicializará o banco na porta `5432`. Para verificar se o container está ativo, execute:*
+*O Docker inicializara o container `postgis/postgis:14-3.3-alpine` na porta `5432`.*
+
+---
+
+### Passo 4: Executar a Suite de Testes Automatizados
+Para rodar todos os 79 testes unitarios e de integracao sobre o banco H2 em memoria:
 ```bash
-docker ps
+./mvnw test
 ```
 
 ---
 
-### 🛠️ Passo 4: Compilar o Projeto e Rodar as Migrations do Flyway
-Execute o comando de compilação do Maven na raiz do projeto:
+### Passo 5: Subir a Aplicacao Spring Boot
+Para rodar a API RESTful localmente na porta `8080`:
 ```bash
-mvn clean install
+./mvnw spring-boot:run
 ```
-*Durante a inicialização, o **Flyway** executará automaticamente o script `V1__criar_schema_sipma.sql`, criando todas as 15 tabelas e extensões espaciais do PostGIS.*
+*Durante a inicializacao, o **Flyway** executara automaticamente o script `V1__criar_schema_sipma.sql`, criando as 15 tabelas e extensoes espaciais do PostGIS.*
 
 ---
 
-### 🧪 Passo 5: Executar a Suíte Completa de Testes Automatizados
-Para rodar todos os testes de unidade de regras de negócio, controladores REST e persistência sem afetar o banco principal, execute:
-```bash
-mvn test
-```
-*A suíte utilizará automaticamente o perfil isolado de teste (`@ActiveProfiles("test")`), executando sobre o banco H2 em memória.*
-
----
-
-### 🚀 Passo 6: Subir a Aplicação Spring Boot
-Para rodar a API RESTful localmente escutando na porta `8080`, execute:
-```bash
-mvn spring-boot:run
-```
-*A aplicação estará pronta quando exibir no terminal a mensagem:*
-`Started SisTomPatrimonio in X.XXX seconds (JVM running for X.XXX)`
-
----
-
-### 📬 Passo 7: Testar as Rotas da API com o Insomnia
+### Passo 6: Testar as Rotas da API com o Insomnia
 1. Abra o **Insomnia REST Client**.
 2. Clique em **Import** -> **Import From File**.
 3. Selecione o arquivo **`insomnia-SisTomPatrimonio-collection.json`** localizado na raiz do projeto.
-4. Teste os endpoints estruturados nas pastas:
-   * **1. Usuários & Autenticação:** Execute a chamada `POST /api/usuarios` para cadastrar um servidor e `POST /api/usuarios/autenticar` para obter o token JWT.
-   * **2. Core Patrimonial:** Execute a chamada `POST /api/bens` para cadastrar um bem cultural.
-   * **3. Vistorias & Fiscalização:** Teste o agendamento e a inclusão de patologias em JSONB.
+4. Execute as requisicoes organizadas por modulos (`Usuarios`, `Bens culturais`, `Vistorias`, `Protecoes`, `Documentos`, `Eventos`, `Processos judiciais`, `Salvaguardas`, `Auditoria`).

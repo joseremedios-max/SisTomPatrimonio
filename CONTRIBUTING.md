@@ -2,7 +2,7 @@
 
 ## Pré-requisitos
 
-- JDK 25.
+- JDK 17 LTS.
 - Docker Desktop para executar o PostgreSQL/PostGIS localmente.
 - Git configurado com sua identidade.
 
