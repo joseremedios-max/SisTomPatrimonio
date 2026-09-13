@@ -125,7 +125,7 @@ SisTomPatrimonio/
     │   └── resources/
     │       ├── application.yml                 # Configuracao principal da aplicacao
     │       └── db/migration/
-    │           └── V1__criar_schema_sipma.sql  # Migrations Flyway do schema PostGIS
+    │           └── V1__estrutura_inicial_patrimonio_cultural.sql  # Migrations Flyway do schema PostGIS
     └── test/
         ├── java/br/com/SisTomPatrimonio/SisTomPatrimonio/
         │   ├── controllers/                    # Testes de integracao web (MockMvc)
@@ -307,7 +307,7 @@ Para rodar a API RESTful localmente na porta `8080`:
 ```bash
 ./mvnw spring-boot:run
 ```
-*Durante a inicializacao, o **Flyway** executara automaticamente o script `V1__criar_schema_sipma.sql`, criando as 15 tabelas e extensoes espaciais do PostGIS.*
+*Durante a inicializacao, o **Flyway** executara automaticamente o script `V1__estrutura_inicial_patrimonio_cultural.sql`, criando as 15 tabelas e extensoes espaciais do PostGIS.*
 
 ---
 

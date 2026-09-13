@@ -8,7 +8,7 @@
 ---
 
 ## 1. Contexto e Declaração do Problema
-Durante as primeiras iterações do protótipo, o script Flyway inicial (`V1__criar_schema_sipma.sql`) foi gerado a partir do `dbdiagram` oficial fornecido pelo comitê acadêmico. Contudo, 4 entidades JPA (`Salvaguarda`, `EventoBem`, `ProcessoJudicial` e `ProcessoBem`) foram desenvolvidas com nomes de colunas e relacionamentos divergentes do DDL oficial:
+Durante as primeiras iterações do protótipo, o script Flyway inicial (`V1__estrutura_inicial_patrimonio_cultural.sql`) foi gerado a partir do `dbdiagram` oficial fornecido pelo comitê acadêmico. Contudo, 4 entidades JPA (`Salvaguarda`, `EventoBem`, `ProcessoJudicial` e `ProcessoBem`) foram desenvolvidas com nomes de colunas e relacionamentos divergentes do DDL oficial:
 * Em `salvaguarda`: entidade usava `plano_acao` enquanto o DDL usava `titulo`, `versao`, `acoes JSONB`.
 * Em `evento_bem`: entidade usava `tipo_evento` e `responsavel_id` enquanto o DDL usava `tipo` e `organizacao_id`.
 * Em `processo_judicial`: entidade usava `numero_processo` e `assunto` enquanto o DDL usava `numero_cnj` e `objeto`.
