@@ -39,7 +39,17 @@ As Regras de Negócio definem as políticas, restrições operacionais, invarian
 
 ### RN04 — Ciclo de Vida e Publicidade do Bem Cultural
 * **Definição**: Os bens culturais transitam entre os seguintes estados operacionais:
-  $$\text{RASCUNHO} \longrightarrow \text{EM\_REVISAO} \longrightarrow \text{APROVADO} \longrightarrow \text{PUBLICADO} \longrightarrow \text{ARQUIVADO}$$
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> RASCUNHO
+    RASCUNHO --> EM_REVISAO
+    EM_REVISAO --> APROVADO
+    APROVADO --> PUBLICADO
+    PUBLICADO --> ARQUIVADO
+```
+
 * **Critério de Aceite**:
   * Ao ser cadastrado, o bem inicia compulsoriamente como `RASCUNHO`.
   * Um bem só pode atingir o estado `PUBLICADO` quando possuir pelo menos uma localização principal e um processo de proteção vigente associado.
