@@ -1,2 +1,5 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+prototype/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+prototype/**/*.png filter=lfs diff=lfs merge=lfs -text
+prototype/**/*.ico filter=lfs diff=lfs merge=lfs -text
