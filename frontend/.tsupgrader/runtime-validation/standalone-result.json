@@ -1,0 +1,124 @@
+{
+  "planHash": "075b1d7b9005141f717ec597841cc2e34e5682699ce92a5c4b8dc02967a3a080",
+  "phase": "standalone",
+  "recordedAtUtc": "2026-10-15T20:47:30.0117074Z",
+  "retryCount": 4,
+  "resetBaseline": false,
+  "complete": true,
+  "result": {
+    "setupSucceeded": true,
+    "setupDurationMs": 0,
+    "setupFailureOutput": null,
+    "assertions": [
+      {
+        "name": "production-build",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E sistompatrimonio-web@0.0.0 build\r\n\u003E tsc -b \u0026\u0026 vite build\r\n\r\n\u001B[36mvite v8.3.4 \u001B[32mbuilding client environment for production...\u001B[36m\u001B[39m\r\ntransforming...\r\n\u2713 111 modules transformed.\r\nrendering chunks...\r\ncomputing gzip size...\r\ndist/index.html                   0.52 kB \u2502 gzip:   0.33 kB\r\ndist/assets/index-CkV7YuhN.css   28.28 kB \u2502 gzip:   6.16 kB\r\ndist/assets/index-1r2Nv-p0.js   352.47 kB \u2502 gzip: 111.41 kB\r\n\r\n\u001B[32m\u2713 built in 785ms\u001B[39m\r\n",
+        "durationMs": 5093
+      },
+      {
+        "name": "lint-pass",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E sistompatrimonio-web@0.0.0 lint\r\n\u003E oxlint\r\n\r\nsrc/pages/admin/AuditoriaPage.tsx:23:5: warning react(immutability): Cannot access variable while it is being initialized help: \u0060carregarLogs\u0060 is read while its declaration is still being initialized. Move the access after initialization. For a recursive callback, use a named function expression or restructure the callback so it does not capture itself during initialization\r\nsrc/context/MapContext.tsx:3:14: warning react(only-export-components): Fast refresh only works when a file only exports components. Move your React context(s) to a separate file.\r\nsrc/context/AuthContext.tsx:31:14: warning react(only-export-components): Fast refresh only works when a file only exports components. Move your React context(s) to a separate file.\r\nsrc/context/AuthContext.tsx:45:9: warning react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.\r\nsrc/pages/admin/ProcessosJudiciaisPage.tsx:12:5: warning react(immutability): Cannot access variable while it is being initialized help: \u0060carregarProcessos\u0060 is read while its declaration is still being initialized. Move the access after initialization. For a recursive callback, use a named function expression or restructure the callback so it does not capture itself during initialization\r\nprototype/saoluis.jsx:53:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/saoluis.jsx:193:14: warning react(jsx-no-undef): \u0027Icon\u0027 is not defined.\r\nprototype/saoluis.jsx:202:14: warning react(jsx-no-undef): \u0027Icon\u0027 is not defined.\r\nprototype/saoluis.jsx:208:103: warning react(jsx-no-undef): \u0027Icon\u0027 is not defined.\r\nprototype/saoluis.jsx:234:95: warning react(jsx-no-undef): \u0027Icon\u0027 is not defined.\r\nprototype/saoluis.jsx:248:36: warning react(jsx-no-undef): \u0027Icon\u0027 is not defined.\r\nsrc/pages/admin/BemCulturalWizardPage.tsx:47:14: warning eslint(no-unused-vars): Catch parameter \u0027err\u0027 is caught but never used. help: Consider handling this error.\r\nprototype/admin-screens-2.jsx:4:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/admin-screens-2.jsx:109:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/admin-screens-2.jsx:139:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/admin-screens-2.jsx:171:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/admin-screens-2.jsx:194:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/admin-screens-2.jsx:217:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/admin-screens-2.jsx:246:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/admin-screens-2.jsx:282:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/admin-screens-2.jsx:312:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separate file.\r\nprototype/admin-screens-2.jsx:373:10: warning react(only-export-components): Fast refresh only works when a file has exports. Move your component(s) to a separ\n\u2026[truncated]",
+        "durationMs": 1030
+      },
+      {
+        "name": "tests-pass",
+        "kind": "process",
+        "verificationMethod": "test-results",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E sistompatrimonio-web@0.0.0 test\r\n\u003E vitest run\r\n\r\n\r\n RUN  v5.0.4 C:/Users/josea/OneDrive/\u00C1rea de Trabalho/LOB_PROG/SisTomPatrimonio-web\r\n\r\n\r\n Test Files  2 passed (2)\r\n      Tests  3 passed (3)\r\n   Start at  17:47:29\r\n   Duration  563ms (tests 33%, import 29%, transform 23%, worker 15%, environment 1%)\r\n\r\n",
+        "durationMs": 2975,
+        "testResults": {
+          "testFramework": "vitest",
+          "runnerDetectedFrom": "package_json",
+          "testsTotal": 3,
+          "testsPassed": 3,
+          "testsFailed": 0,
+          "testsSkipped": 0,
+          "parseFailed": false
+        }
+      },
+      {
+        "name": "portal-shell-200",
+        "kind": "http-probe",
+        "verificationMethod": "http-status",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": null,
+        "outputSample": "HTTP 200\n\u003C!doctype html\u003E\n\u003Chtml lang=\u0022pt-BR\u0022\u003E\n  \u003Chead\u003E\n    \u003Cscript type=\u0022module\u0022\u003Eimport { injectIntoGlobalHook } from \u0022/@react-refresh\u0022;\ninjectIntoGlobalHook(window);\nwindow.$RefreshReg$ = () =\u003E {};\nwindow.$RefreshSig$ = () =\u003E (type) =\u003E type;\u003C/script\u003E\n\n    \u003Cscript type=\u0022module\u0022 src=\u0022/@vite/client\u0022\u003E\u003C/script\u003E\n\n    \u003Cmeta charset=\u0022UTF-8\u0022 /\u003E\n    \u003Clink rel=\u0022icon\u0022 type=\u0022image/svg\u002Bxml\u0022 href=\u0022/favicon.svg\u0022 /\u003E\n    \u003Cmeta name=\u0022viewport\u0022 content=\u0022width=device-width, initial-scale=1.0\u0022 /\u003E\n    \u003Cmeta name=\u0022theme-color\u0022 content=\u0022#123b2a\u0022 /\u003E\n    \u003Ctitle\u003ESisTomPatrim\u00F4nio\u003C/title\u003E\n  \u003C/head\u003E\n  \u003Cbody\u003E\n    \u003Cdiv id=\u0022root\u0022\u003E\u003C/div\u003E\n    \u003Cscript type=\u0022module\u0022 src=\u0022/src/main.tsx?t=1792097240884\u0022\u003E\u003C/script\u003E\n  \u003C/body\u003E\n\u003C/html\u003E\n",
+        "durationMs": 15
+      }
+    ],
+    "executions": [
+      {
+        "source": "production-build",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "build"
+        ],
+        "cwd": "C:\\Users\\josea\\OneDrive\\\u00C1rea de Trabalho\\LOB_PROG\\SisTomPatrimonio-web",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "lint-pass",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "lint"
+        ],
+        "cwd": "C:\\Users\\josea\\OneDrive\\\u00C1rea de Trabalho\\LOB_PROG\\SisTomPatrimonio-web",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "tests-pass",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "test"
+        ],
+        "cwd": "C:\\Users\\josea\\OneDrive\\\u00C1rea de Trabalho\\LOB_PROG\\SisTomPatrimonio-web",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "portal-shell-200",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "run",
+          "dev",
+          "--",
+          "--host",
+          "127.0.0.1"
+        ],
+        "cwd": "C:\\Users\\josea\\OneDrive\\\u00C1rea de Trabalho\\LOB_PROG\\SisTomPatrimonio-web",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      }
+    ]
+  }
+}

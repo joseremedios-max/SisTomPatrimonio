@@ -1,0 +1,62 @@
+name: CI/CD — SIP-MA (Backend & Frontend)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-test-and-build:
+    name: Backend (Java 17 / Spring Boot 3)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Validate Maven wrapper
+        run: chmod +x mvnw && ./mvnw -version
+
+      - name: Run Backend Automated Tests (JUnit 5 / MockMvc / H2 Spatial)
+        run: ./mvnw clean test
+
+  frontend-lint-test-and-build:
+    name: Frontend (React / TypeScript / Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Linter (Oxlint)
+        run: npm run lint
+
+      - name: Run Unit Tests (Vitest)
+        run: npm test
+
+      - name: Build Production Bundle (TypeScript Strict + Vite)
+        run: npm run build

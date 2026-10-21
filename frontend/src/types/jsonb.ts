@@ -1,0 +1,1 @@
+export type DadosEspecificos = { tipo: 'EDIFICACAO'; estilo?: string; tombamento?: string } | { tipo: 'MANIFESTACAO'; periodicidade?: string; mestres?: string[] } | { tipo: 'OBJETO'; material?: string; dimensoes?: string };

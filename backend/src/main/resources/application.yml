@@ -1,0 +1,82 @@
+# ============================================================
+# SIP-MA (Sistema de Informação do Patrimônio - Maranhão)
+# Arquivo de Configuração Principal da Aplicação
+# Spring Boot 3.x - YAML Format (application.yml)
+# ============================================================
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: sipma-api
+
+  # ------------------------------------------------------------
+  # CONFIGURAÇÃO DE BANCO DE DADOS (PostgreSQL + PostGIS)
+  # ------------------------------------------------------------
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/sipma_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgrespassword}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: SIPMA-HikariPool
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  # ------------------------------------------------------------
+  # PERSISTÊNCIA JPA & HIBERNATE (Suporte Geoespacial Ativo)
+  # ------------------------------------------------------------
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate # Valida o schema físico contra o script do Flyway
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20 # Otimização para gravação sequencial em lote
+
+  # ------------------------------------------------------------
+  # EVOLUÇÃO DE SCHEMA (Flyway Migrations de Alta Rastreabilidade)
+  # ------------------------------------------------------------
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    schemas: public
+    locations: classpath:db/migration
+
+  # ------------------------------------------------------------
+  # MULTIPART MULTIMÍDIA (Upload de Documentos/Portarias)
+  # ------------------------------------------------------------
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 15MB
+
+# ------------------------------------------------------------
+# PARÂMETROS OPERACIONAIS DE SEGURANÇA E JWT
+# ------------------------------------------------------------
+security:
+  jwt:
+    # Chave de segurança criptográfica para HMAC-SHA256
+    secret: ${JWT_SECRET:local-development-secret-change-me}
+    # Expiração: 8 Horas (tempo de expediente de vistorias técnicas externas)
+    expiration: PT8H
+    token-prefix: "Bearer "
+    header-string: "Authorization"
+
+# ------------------------------------------------------------
+# LOGS E AUDITORIA DO FLUXO DE TRANSAÇÃO DO BACKEND
+# ------------------------------------------------------------
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG # Exibe o comando SQL gerado no terminal
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Exibe as chaves UUID nos logs
+    org.flywaydb: INFO

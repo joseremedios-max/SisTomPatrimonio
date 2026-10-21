@@ -1,0 +1,19 @@
+{
+  "name": "SIP-MA — Sistema de Informação do Patrimônio do Maranhão",
+  "short_name": "SIP-MA",
+  "description": "Plataforma governamental de inventário, fiscalização, geoprocessamento e salvaguarda do patrimônio cultural maranhense.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#123b2a",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

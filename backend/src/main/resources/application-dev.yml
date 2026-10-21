@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  flyway:
+    enabled: false
+
+logging:
+  level:
+    org.hibernate.SQL: INFO
+
+app:
+  dev:
+    admin:
+      email: ${DEV_ADMIN_EMAIL:admin@local.test}
+      password: ${DEV_ADMIN_PASSWORD:Admin@12345}

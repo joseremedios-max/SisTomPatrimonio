@@ -1,0 +1,2 @@
+export function formatarCNJ(value: string) { const digits = value.replace(/\D/g, '').slice(0, 20); return digits.replace(/^(\d{7})(\d{2})(\d{4})(\d{1})(\d{2})(\d{4})$/, '$1-$2.$3.$4.$5.$6'); }
+export function validarCNJ(value: string) { return /^\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}$/.test(value); }

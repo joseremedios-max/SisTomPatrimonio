@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-SisTomPatrimonioApplication<SisTomPatrimonio>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "br.com.SisTomPatrimonio.SisTomPatrimonio.SisTomPatrimonioApplication",
+            "projectName": "SisTomPatrimonio",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

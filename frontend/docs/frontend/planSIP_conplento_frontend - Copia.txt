@@ -1,0 +1,249 @@
+Plano de Desenvolvimento e Estado Atual do Frontend & Full-Stack — SIP-MA (Sistema de Informação do Patrimônio do Maranhão)
+Status Geral do Projeto: 100% IMPLEMENTADO, INTEGRADO E HOMOLOGADO (Frontend + Backend + PostGIS)
+
+1. Visão Geral e Arquitetura do Frontend
+
+1.1. Arquitetura Dual-Face & Propósito da Aplicação
+
+O Sistema de Informação do Patrimônio do Maranhão (SIP-MA / SisTomPatrimonio) é uma plataforma corporativa e estadual de geoprocessamento, salvaguarda e controle documental projetada para mapear, proteger e fiscalizar a herança cultural tangível (bens materiais edificados), intangível (patrimônio imaterial) e arqueológica nos 217 municípios do Estado do Maranhão. Para responder aos rigorosos requisitos operacionais e às exigências legais de transparência pública, a arquitetura de interface do usuário adota uma estratégia de arquitetura dual-face, estabelecendo uma separação estrita entre o Portal Público Cidadão e o Painel Administrativo.
+
+O Portal Público Cidadão é projetado para o público em geral, pesquisadores, estudantes e cidadãos maranhenses, com foco principal em transparência pública, navegação interativa em mapas estaduais (com clusterização espacial e alternância satélite/vetorial), consulta ao acervo cultural, acesso a fichas técnicas detalhadas e ouvidoria cidadã para reporte de inconsistências. Essa face atua sob uma superfície de dados estritamente sanitizada (consulta_publica), garantindo navegação anônima, acessível (WCAG 2.1 AA), responsiva e performática, sem exposição de metadados internos, dados pessoais ou coordenadas arqueológicas sensíveis.
+
+Por outro lado, o Painel Administrativo é uma interface restrita voltada a peritos, técnicos patrimoniais da SECMA e IPHAN, procuradores jurídicos, consultores credenciados, auditores e administradores gerais. Essa interface provê suporte a fluxos transacionais completos: cadastro de bens em dez etapas (Wizard com auto-save em IndexedDB), gestão de tombamento e proteção legal, planos de salvaguarda imaterial (RN02), vistorias técnicas com vetor de patologias e fila offline PWA, módulo jurídico no padrão CNJ, controle documental com checksum SHA-256 + antivírus assíncrono ClamAV, trilha de auditoria e governança de usuários/configurações.
+
+Quesito | Portal Público Cidadão | Painel Administrativo
+Público-Alvo | Cidadãos, estudantes, pesquisadores, turistas e público em geral. | Peritos técnicos da SECMA/IPHAN-MA, procuradores jurídicos, consultores, leitores e administradores.
+Nível de Acesso | Acesso público anônimo (sem necessidade de autenticação). | Autenticação obrigatória com Cookie HttpOnly + Access Token em Memória, 2FA e RBAC em 5 perfis.
+Funcionalidades Principais | Mapa Interativo Estadual (Clusters + Satélite), Acervo Público, Categorias (Imaterial/Arqueológico), Ficha Técnica e Reportar Inconsistência (com protocolo). | Dashboard Executivo, Wizard 10 Etapas (IndexedDB), Tombamento e Proteção, Planos de Salvaguarda, Vistorias (Offline PWA), Módulo Jurídico CNJ, Documentos SHA-256/ClamAV, Risco, GIS Polígonos, Relatórios, Auditoria, Usuários e Configurações.
+Restrições Espaciais | Visualização de geometria pública generalizada. Isolamento absoluto de coordenadas exatas de sítios arqueológicos sensíveis. | Acesso a georreferenciamento técnico completo e ferramenta de desenho de poligonal de tombamento em GeoJSON (SIRGAS 2000 / EPSG:4326).
+
+1.2. Stack Tecnológica Core (Estado Atual Implementado)
+
+* React 19 + TypeScript 5 (Modo Estrito - strict: true): Biblioteca principal para construção da interface declarativa com segurança de tipos de ponta a ponta alinhada aos DTOs do backend Spring Boot 3.5.
+* Vite 8: Ferramenta de build e servidor de desenvolvimento ESM com Hot Module Replacement (HMR) imediato.
+* Tailwind CSS 3: Estilização institucional responsiva com suporte a alto contraste, anéis de foco visíveis e conformidade WCAG 2.1 AA.
+* React Router DOM 7: Roteamento declarativo SPA com guardas de rota por perfil RBAC (ProtectedRoute).
+* Leaflet 1.9: Motor cartográfico integrado com clusterização espacial adaptativa (LeafletClusters), camadas GeoJSON interativas (GeoJsonLayer) e alternância de basemaps OpenStreetMap / Esri World Imagery.
+* Persistência Offline Nativa (IndexedDB + Service Worker PWA): Armazenamento local no navegador (sipma_offline_db) para rascunhos automáticos do Wizard (wizard_drafts) e fila de sincronização de laudos de vistoria em campo (offline_laudos).
+* Qualidade e CI/CD: Oxlint para análise estática ultrarrápida, Vitest para testes unitários, Cypress para testes E2E e GitHub Actions (.github/workflows/ci.yml) validando Backend (77 testes JUnit) e Frontend.
+
+1.3. Comunicação HTTP e Camada de Segurança (Cliente Axios + Sessão Híbrida OWASP)
+
+A camada de comunicação HTTP é construída sobre a instância centralizada do cliente Axios (src/services/api.ts) integrada ao AuthContext (src/context/AuthContext.tsx). Para eliminar qualquer risco de exfiltração de tokens via XSS, o projeto substituiu o armazenamento de tokens em localStorage pela arquitetura híbrida padrão OWASP:
+
+* Zero Token em Web Storage: O Access Token JWT (curta duração: 15 minutos) é mantido exclusivamente em memória RAM (variável encapsulada inMemoryAccessToken em src/services/api.ts).
+* Refresh Token em Cookie HttpOnly: No login (POST /api/usuarios/autenticar), o backend emite o cookie sipma_refresh_token com as flags HttpOnly=true, SameSite=Strict e Path=/api/usuarios (validade de 8 horas).
+* Silent Refresh Automático (Interceptor 401): Caso uma requisição receba HTTP 401 ou o usuário recarregue a página (F5), o cliente invoca silenciosamente POST /api/usuarios/refresh (enviando o cookie HttpOnly via withCredentials: true), rotaciona o token em memória e repete a requisição original de forma transparente.
+
+// Estrutura implementada do cliente Axios (src/services/api.ts)
+import axios from 'axios';
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
+
+let inMemoryAccessToken: string | null = null;
+
+export const setAccessToken = (token: string | null) => {
+  inMemoryAccessToken = token;
+};
+
+export const getAccessToken = (): string | null => inMemoryAccessToken;
+
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
+  timeout: 15000,
+  withCredentials: true, // Envia e recebe o Cookie HttpOnly (SameSite=Strict)
+  headers: { 'Content-Type': 'application/json' },
+});
+
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  if (inMemoryAccessToken && config.headers) {
+    config.headers.Authorization = `Bearer ${inMemoryAccessToken}`;
+  }
+  return config;
+});
+
+1.4. Roteamento e Controle de Acesso Baseado em Funções (RBAC — 5 Perfis Homologados)
+
+O controle de acesso é aplicado em três camadas simultâneas:
+1. Menu Lateral Dinâmico (src/layout/AdminLayout.tsx): Filtra os itens de navegação conforme o perfil do usuário autenticado.
+2. Guarda de Rotas React (src/routes/AppRoutes.tsx e src/routes/ProtectedRoute.tsx): Bloqueia acesso direto por URL a rotas não permitidas ao perfil.
+3. Spring Security Filter Chain (SecurityConfig.java): Valida a role contida no JWT e retorna 403 Forbidden para chamadas não autorizadas.
+
+Perfis Institucionais Cadastrados Automaticamente em Ambiente Dev (DevAdminInitializer.java):
+* ADMIN (admin@local.test / Admin@12345): Administrador Geral SECMA — governança total, gestão de usuários, configurações do sistema e acesso a todos os módulos.
+* TECNICO (tecnico@local.test / Tecnico@12345): Perito Técnico IPHAN/SECMA — cadastro Wizard de bens, tombamento e proteção, planos de salvaguarda, vistorias, documentos, triagem de inconsistências e auditoria.
+* JURIDICO (juridico@local.test / Juridico@12345): Procurador Jurídico PGE/SECMA — gestão de processos judiciais (padrão CNJ), movimentações processuais, sigilo e documentos probatórios.
+* CONSULTOR (consultor@local.test / Consultor@12345): Consultor Patrimonial Credenciado — realização de vistorias técnicas (incluindo modo campo offline PWA), consulta de bens, geoprocessamento e documentos.
+* LEITOR (leitor@local.test / Leitor@12345): Auditor / Consulta Interna — acesso consultivo ao Dashboard, Bens Culturais, Risco e Conservação, Georreferenciamento e Relatórios.
+
+Mapeamento Real de Rotas e Permissões (src/routes/AppRoutes.tsx):
+
+Rota | Módulo | Perfis Permitidos | Descrição do Acesso
+/ | Mapa Público Estadual | Público (Anônimo) | Mapa interativo com clusters, filtro e alternância OSM/Satélite.
+/acervo | Acervo Público | Público (Anônimo) | Catálogo público paginado com busca textual e filtros.
+/acervo/imaterial | Patrimônio Imaterial | Público (Anônimo) | Recorte temático público de manifestações imateriais.
+/acervo/arqueologico | Sítios Arqueológicos | Público (Anônimo) | Recorte temático público com coordenadas protegidas/generalizadas.
+/acervo/:id e /ficha/:id | Ficha Pública | Público (Anônimo) | Ficha técnica pública detalhada do bem cultural.
+/reportar-inconsistencia | Ouvidoria / Triagem | Público + Triagem (ADMIN, TECNICO) | Envio público por código/UUID, listagem de protocolos e triagem técnica de status.
+/admin/login | Autenticação | Público (Anônimo) | Login institucional com suporte a 2FA (/admin/2fa).
+/admin/dashboard | Dashboard Executivo | ADMIN, TECNICO, JURIDICO, CONSULTOR, LEITOR | Indicadores consolidados do acervo estadual.
+/admin/bens | Bens Culturais | ADMIN, TECNICO, JURIDICO, CONSULTOR, LEITOR | Listagem administrativa completa do inventário.
+/admin/bens/novo | Wizard 10 Etapas | ADMIN, TECNICO | Cadastro completo com auto-save local em IndexedDB.
+/admin/protecao | Tombamento e Proteção | ADMIN, TECNICO | Consulta por bem e registro de processos de tombamento/registro (com homologação).
+/admin/salvaguarda | Planos de Salvaguarda | ADMIN, TECNICO | Gestão de planos de salvaguarda exclusivos para bens IMATERIAL (Regra RN02).
+/admin/vistorias | Vistorias e Fiscalização | ADMIN, TECNICO, CONSULTOR | Registro de laudos, patologias e sincronização de fila offline PWA.
+/admin/processos | Módulo Jurídico CNJ | ADMIN, JURIDICO | Gestão de processos judiciais (validação CNJ) e movimentações.
+/admin/documentos | Documentos e Mídias | ADMIN, TECNICO, JURIDICO, CONSULTOR, LEITOR | Acervo documental com checksum SHA-256 e status de antivírus ClamAV.
+/admin/risco | Risco e Conservação | ADMIN, TECNICO, JURIDICO, CONSULTOR, LEITOR | Monitoramento de vulnerabilidade física e conservação.
+/admin/georreferenciamento | Geoprocessamento GIS | ADMIN, TECNICO, JURIDICO, CONSULTOR, LEITOR | Mapa técnico com desenho e exportação de poligonal GeoJSON.
+/admin/relatorios | Relatórios Executivos | ADMIN, TECNICO, JURIDICO, CONSULTOR, LEITOR | Extração de indicadores e relatórios gerenciais.
+/admin/auditoria | Trilha de Auditoria | ADMIN, TECNICO | Consulta imutável (append-only) de eventos de auditoria.
+/admin/usuarios | Gestão de Usuários | ADMIN | Criação, edição de perfis RBAC e ativação/inativação de contas.
+/admin/configuracoes | Configurações Globais | ADMIN | Gestão de chaves e parâmetros institucionais do sistema.
+
+1.5. Geoprocessamento GIS Avançado e Proteção Arqueológica
+
+* Clusterização Espacial Adaptativa (src/utils/geojsonUtils.ts e src/components/map/LeafletClusters.tsx): Agrupa marcadores próximos em células espaciais quando zoom < 16, exibindo contadores visuais e aplicando zoom-to-cluster ao clicar.
+* Desenho de Poligonais de Tombamento (src/components/map/GeoJsonLayer.tsx e src/components/map/MapContainer.tsx): Permite desenhar vértices diretamente sobre o mapa e exportar o polígono GeoJSON fechado no padrão PostGIS ([longitude, latitude], SRID 4326).
+* Alternância de Camadas Base (Basemaps): Suporte nativo para alternar em tempo real entre Mapa Vetorial (OpenStreetMap) e Imagem de Satélite (Esri World Imagery).
+* Isolamento de Coordenadas Arqueológicas (Lei Federal nº 3.924/1961): O portal público consome apenas coordenadas municipais generalizadas, enquanto a precisão exata (geom_exata) é restrita ao ambiente autenticado.
+
+2. Estrutura Real do Diretório frontend/
+
+frontend/
+├── cypress/
+│   └── e2e/
+│       └── fluxos-sipma.cy.ts          # Suíte E2E cobrindo fluxos do Cidadão e do Perito
+├── docs/
+│   └── frontend/                       # Documentação arquitetural completa (01 a 09 + Prompt Mestre)
+├── public/
+│   ├── manifest.webmanifest            # Manifesto PWA instalável para operação em campo
+│   └── sw.js                           # Service Worker (Network-First API + Cache Fallback)
+├── src/
+│   ├── components/
+│   │   ├── common/
+│   │   ├── forms/
+│   │   │   └── FileUploadZone.tsx      # Upload com cálculo Web Crypto SHA-256 e limite 50MB
+│   │   ├── map/
+│   │   │   ├── GeoJsonLayer.tsx        # Renderização e desenho de polígonos GeoJSON
+│   │   │   ├── LeafletClusters.tsx     # Agrupamento espacial dinâmico por nível de zoom
+│   │   │   └── MapContainer.tsx        # Controle de mapa OSM/Satélite + ferramenta de polígono
+│   │   └── ui/
+│   │       ├── Button.tsx
+│   │       └── Input.tsx
+│   ├── context/
+│   │   ├── AuthContext.tsx             # Sessão em memória + Silent Refresh via Cookie HttpOnly
+│   │   └── MapContext.tsx
+│   ├── hooks/
+│   │   └── useAuth.ts
+│   ├── layout/
+│   │   ├── AdminLayout.tsx             # Layout administrativo com menu filtrado por perfil RBAC
+│   │   ├── Footer.tsx                  # Rodapé acessível WCAG 2.1 AA
+│   │   ├── Header.tsx                  # Cabeçalho público com navegação semântica
+│   │   └── PublicLayout.tsx            # Layout público com Skip-to-Content link
+│   ├── pages/
+│   │   ├── public/
+│   │   │   ├── AcervoPublicoPage.tsx
+│   │   │   ├── CategoriaPublicaPage.tsx
+│   │   │   ├── FichaPublicaPage.tsx
+│   │   │   ├── HomeMapPage.tsx
+│   │   │   └── ReportarInconsistenciaPage.tsx # Ouvidoria pública + triagem técnica RBAC
+│   │   └── admin/
+│   │       ├── auth/
+│   │       │   ├── LoginPage.tsx
+│   │       │   ├── RecoverCredentialsPage.tsx
+│   │       │   └── TwoFactorPage.tsx
+│   │       ├── AuditoriaPage.tsx
+│   │       ├── BemCulturalWizardPage.tsx      # Wizard 10 etapas com auto-save IndexedDB
+│   │       ├── BensPage.tsx
+│   │       ├── ConfiguracoesPage.tsx
+│   │       ├── DashboardPage.tsx
+│   │       ├── DocumentosPage.tsx
+│   │       ├── GeorreferenciamentoPage.tsx
+│   │       ├── ModuloJuridicoPage.tsx
+│   │       ├── ProtecaoPage.tsx               # Consulta e registro de Tombamento/Proteção
+│   │       ├── RelatoriosPage.tsx
+│   │       ├── RiscoPage.tsx
+│   │       ├── SalvaguardaPage.tsx            # Consulta e cadastro de Salvaguarda (RN02)
+│   │       ├── UsuariosPage.tsx
+│   │       └── VistoriasPage.tsx              # Vistorias + fila offline IndexedDB
+│   ├── routes/
+│   │   ├── AppRoutes.tsx
+│   │   └── ProtectedRoute.tsx
+│   ├── services/
+│   │   ├── api.ts
+│   │   ├── bemCulturalService.ts
+│   │   ├── documentoService.ts
+│   │   ├── juridicoService.ts
+│   │   └── vistoriaService.ts
+│   ├── types/
+│   │   ├── dtos.ts
+│   │   ├── enums.ts
+│   │   └── jsonb.ts
+│   └── utils/
+│       ├── cnjValidator.ts
+│       ├── formatters.ts
+│       ├── formatters.test.ts
+│       ├── geojsonUtils.ts
+│       ├── geojsonUtils.test.ts
+│       ├── offlineDb.ts                # Persistência IndexedDB (rascunhos e fila de vistorias)
+│       ├── offlineDb.test.ts
+│       └── pwaRegistration.ts          # Registro automático do Service Worker
+
+3. Módulos Funcionais Implementados e Homologados
+
+3.1. Portal Público e Ouvidoria Cidadã (Reportar Inconsistência)
+* Mapa Interativo Estadual (/): Exibe os bens culturais publicados com clusterização espacial, filtros e alternância entre mapa vetorial e satélite.
+* Acervo Público (/acervo) e Ficha Pública (/ficha/:id): Consulta paginada, recortes por patrimônio imaterial e arqueológico e visualização de metadados públicos com marcação semântica acessível (<dl>/<dt>/<dd>).
+* Reportar Inconsistência (/reportar-inconsistencia):
+  - Permite que qualquer cidadão selecione um Bem Cultural do acervo ou digite seu Código Institucional (ex.: DEV-MAT-001, DEV-IMA-001) ou UUID para relatar riscos ou divergências cadastrais.
+  - Gera número de protocolo em tempo real e lista os Protocolos Registrados no banco.
+  - Quando acessado por um usuário autenticado com perfil ADMIN ou TECNICO, habilita botões de triagem rápida ("Marcar Em Análise" e "Marcar Resolvido") via PATCH /api/v1/cadastros/relatos-inconsistencia/{id}/status.
+
+3.2. Tombamento e Proteção (/admin/protecao)
+* Permite selecionar qualquer Bem Cultural e visualizar seus processos administrativos de proteção vinculados (GET /api/v1/protecoes/bem/{bemId}).
+* Contém formulário completo para registrar novos atos/processos de proteção (POST /api/v1/protecoes) informando Número do Processo, Esfera (ESTADUAL, FEDERAL, MUNICIPAL, INTERNACIONAL), Tipo de Proteção (TOMBAMENTO, REGISTRO, VALORACAO), Fase (EM_ESTUDO, EM_INSTRUCAO, PROVISORIO, HOMOLOGADO), Ato Normativo, Livro do Tombo e Número de Inscrição.
+* Quando registrado na fase HOMOLOGADO, o backend executa automaticamente bem.tombar() e registra o evento na trilha de auditoria.
+
+3.3. Planos de Salvaguarda (/admin/salvaguarda)
+* Seleciona automaticamente bens de natureza IMATERIAL e lista seus planos de salvaguarda ativos/planejados (GET /api/v1/salvaguardas/bem/{bemId}).
+* Permite cadastrar novos Planos de Salvaguarda (POST /api/v1/salvaguardas) com Plano de Ação e Metas, Status (PLANEJADO, ATIVO, CONCLUIDO, CANCELADO) e período de vigência.
+* Aplica rigorosamente a Regra de Negócio RN02 no backend (SalvaguardaService.java): bloqueia tentativas de vincular planos de salvaguarda a bens de natureza MATERIAL_EDIFICADO ou ARQUEOLOGICO.
+
+3.4. Wizard de 10 Etapas com Auto-Save Offline (/admin/bens/novo)
+* Implementa as 10 etapas sequenciais de cadastro técnico com validação de segregação de funções na etapa final (impedindo que o autor aprove a própria submissão quando exigido).
+* Salva automaticamente o rascunho no IndexedDB (store wizard_drafts) com debounce de 300ms e restaura o preenchimento ao reabrir a tela.
+
+3.5. Vistorias Técnicas e Operação Offline PWA (/admin/vistorias)
+* Permite registrar laudos de conservação e matrizes de patologias (infiltração, fissura estrutural, desprendimento de azulejos, etc.).
+* Monitora o status de rede (online/offline): quando sem internet em campo, armazena os laudos localmente no IndexedDB (store offline_laudos) e sincroniza automaticamente com a API assim que a conexão retorna.
+
+3.6. Módulo Jurídico CNJ (/admin/processos) e Documentos com Antivírus ClamAV (/admin/documentos)
+* Módulo Jurídico: Valida o formato unificado CNJ (NNNNNNN-NN.NNNN.N.NN.NNNN), controla sigilo (PUBLICO, RESTRITO, SEGREDO_JUSTICA) e registra movimentações processuais.
+* Módulo Documental: Calcula o hash SHA-256 no navegador via Web Crypto API antes do upload, confere a integridade síncrona no backend e dispara varredura assíncrona (@Async) via socket TCP no daemon ClamAV (zINSTREAM) e motor de assinaturas EICAR, bloqueando o download de arquivos marcados como REJEITADO.
+
+4. Status de Execução das Sprints e do Roadmap Técnico
+
+4.1. Sprint 1: Fundação, Setup, Autenticação OWASP e Core HTTP — [CONCLUÍDA]
+* [x] Inicialização do projeto Vite + React + TypeScript no modo estrito (strict: true).
+* [x] Configuração do Tailwind CSS e componentes base acessíveis.
+* [x] Configuração do cliente Axios com Access Token em memória, Refresh Token em Cookie HttpOnly (SameSite=Strict) e silent refresh automático.
+* [x] Implementação do AuthContext e das telas de Login, Recuperação e 2FA.
+* [x] Construção do ProtectedRoute e AdminLayout com controle de acesso para os 5 perfis RBAC (ADMIN, TECNICO, JURIDICO, CONSULTOR, LEITOR).
+
+4.2. Sprint 2: Módulo GIS, Acervo Público, Ouvidoria e Wizard 10 Etapas — [CONCLUÍDA]
+* [x] Integração do Leaflet no datum SIRGAS 2000 (EPSG:4326) com clusterização espacial e alternância OSM/Satélite.
+* [x] Isolamento geoespacial de sítios arqueológicos confidenciais no mapa público.
+* [x] Catálogo público paginado, Ficha Técnica Detalhada e tela de Reportar Inconsistência com protocolo e triagem técnica.
+* [x] Formulário Wizard em 10 etapas com auto-save resiliente em IndexedDB.
+
+4.3. Sprint 3: Vistorias PWA, Tombamento e Upload com SHA-256 + ClamAV — [CONCLUÍDA]
+* [x] Telas de vistorias técnicas, matriz de patologias e fila offline PWA sincronizada via IndexedDB.
+* [x] Tela de Tombamento e Proteção (/admin/protecao) com consulta por bem e cadastro de novos processos.
+* [x] Componente FileUploadZone com validação de 50MB, cálculo local de Hash SHA-256 e varredura antivírus assíncrona ClamAV no backend.
+
+4.4. Sprint 4: Módulo Jurídico, Salvaguarda, Auditoria, Acessibilidade e CI/CD — [CONCLUÍDA]
+* [x] Módulo Jurídico (/admin/processos) com validação CNJ e histórico de movimentações.
+* [x] Módulo de Planos de Salvaguarda (/admin/salvaguarda) com validação da Regra de Negócio RN02.
+* [x] Painel de Auditoria Administrativa (/admin/auditoria), Gestão de Usuários (/admin/usuarios) e Configurações (/admin/configuracoes).
+* [x] Adequação de acessibilidade WCAG 2.1 AA no Portal Público.
+* [x] Suíte de testes automatizados (77 testes JUnit no Backend + Vitest + Cypress E2E no Frontend) e pipeline CI/CD no GitHub Actions (.github/workflows/ci.yml).

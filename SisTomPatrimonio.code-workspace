@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../SisTomPatrimonio-web"
+		}
+	],
+	"settings": {
+		"java.compile.nullAnalysis.mode": "disabled",
+		"java.configuration.runtimes": [
+			{
+				"name": "JavaSE-17",
+				"path": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot",
+				"default": true
+			}
+		]
+	}
+}
